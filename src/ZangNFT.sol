@@ -6,6 +6,7 @@ import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "./ERC1155OnChain.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "./ERC2981PerTokenRoyalties.sol";
+import {StringUtils} from "./StringUtils.sol";
 
 contract ZangNFT is
     ERC1155OnChain,
@@ -39,22 +40,23 @@ contract ZangNFT is
         return _tokenIds.current();
     }
 
-    function _exists(uint256 _tokenId) internal view returns (bool) {
+    function exists(uint256 _tokenId) public view returns (bool) {
+        if(_tokenId == 0) return false;
         return lastTokenId() >= _tokenId;
     }
 
     function uri(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "ZangNFT: uri query for nonexistent token");
+        require(exists(tokenId), "ZangNFT: uri query for nonexistent token");
         string memory json = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
                         '{ "name": "',
-                        _names[tokenId],
+                        StringUtils.insertAsciiBeforeString(_names[tokenId], '"', '\\'),
                         '", ',
                         '"description" : ',
                         '"',
-                        _descriptions[tokenId],
+                        StringUtils.insertAsciiBeforeString(_descriptions[tokenId], '"', '\\'),
                         '", ',
                         //'"image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '", '
                         '"textURI" : ',
@@ -115,7 +117,7 @@ contract ZangNFT is
         returns (string memory)
     {
         require(
-            _exists(tokenId),
+            exists(tokenId),
             "ZangNFT: textURI query for nonexistent token"
         );
         return _textURIs[tokenId];
