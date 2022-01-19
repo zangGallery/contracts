@@ -66,7 +66,7 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
      * - `accounts` and `ids` must have the same length.
      */
     function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
-        public
+        external
         view
         virtual
         override
@@ -86,7 +86,7 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) external virtual override {
         require(_msgSender() != operator, "ERC1155: setting approval status for self");
 
         _operatorApprovals[_msgSender()][operator] = approved;
@@ -109,7 +109,7 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public virtual override {
+    ) external virtual override {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
@@ -126,7 +126,7 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public virtual override {
+    ) external virtual override {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: transfer caller is not owner nor approved"
@@ -371,11 +371,15 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
         bytes memory data
     ) private {
         if (to.isContract()) {
-            try IERC1155Receiver(to).onERC1155Received(operator, from, id, amount, data) returns (bytes4 response) {
+            // slither-disable-next-line unused-return
+            try IERC1155Receiver(to).onERC1155Received(operator, from, id, amount, data) returns (
+                // slither-disable-next-line uninitialized-local,variable-scope
+                bytes4 response
+                ) {
                 if (response != IERC1155Receiver.onERC1155Received.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
-            } catch Error(string memory reason) {
+            } catch Error(string memory /*reason*/) {
                 //revert(reason);
             } catch {
                 //revert("ERC1155: transfer to non ERC1155Receiver implementer");
@@ -392,14 +396,16 @@ contract ERC1155OnChain is Context, ERC165, IERC1155 {
         bytes memory data
     ) private {
         if (to.isContract()) {
+            // slither-disable-next-line unused-return
             try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, ids, amounts, data) returns (
+                // slither-disable-next-line uninitialized-local,variable-scope
                 bytes4 response
             ) {
                 if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
-            } catch Error(string memory reason) {
-                revert(reason);
+            } catch Error(string memory /*reason*/) {
+                //revert(reason);
             } catch {
                 revert("ERC1155: transfer to non ERC1155Receiver implementer");
             }
