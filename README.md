@@ -1,1 +1,1 @@
-# Zang Contracts
+# zang Contracts
