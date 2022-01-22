@@ -45,7 +45,7 @@ contract ZangNFT is
         return lastTokenId() >= _tokenId;
     }
 
-    function uri(uint256 tokenId) public view override returns (string memory) {
+    function uri(uint256 tokenId) external view override returns (string memory) {
         require(exists(tokenId), "ZangNFT: uri query for nonexistent token");
         string memory json = Base64.encode(
             bytes(
@@ -75,7 +75,7 @@ contract ZangNFT is
         return output;
     }
 
-    function authorOf(uint256 _tokenId) public view returns (address) {
+    function authorOf(uint256 _tokenId) external view returns (address) {
         address author = _authors[_tokenId];
         require(
             author != address(0),
@@ -92,7 +92,7 @@ contract ZangNFT is
         uint256 royaltyPercentage_, //NB: two decimals, so 10% is 1000
         address royaltyRecipient_,
         bytes memory data_
-    ) public returns (uint256) {
+    ) external returns (uint256) {
         _tokenIds.increment();
 
         uint256 newTokenId = _tokenIds.current();
