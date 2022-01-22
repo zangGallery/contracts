@@ -16,5 +16,9 @@ jobs:
         uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
+      - name: Install packages
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
       - name: Run tests
         run: forge test
