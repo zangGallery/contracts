@@ -96,12 +96,13 @@ contract ZangNFT is
         _tokenIds.increment();
 
         uint256 newTokenId = _tokenIds.current();
-        _mint(msg.sender, newTokenId, amount_, data_);
         _setTextURI(newTokenId, textURI_);
         _names[newTokenId] = name_;
         _descriptions[newTokenId] = description_;
         _authors[newTokenId] = msg.sender;
         _setTokenRoyalty(newTokenId, royaltyRecipient_, royaltyPercentage_);
+
+        _mint(msg.sender, newTokenId, amount_, data_);
 
         return newTokenId;
     }
