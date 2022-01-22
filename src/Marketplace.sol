@@ -51,7 +51,7 @@ contract Marketplace is Pausable, Ownable {
         ZangCommissionAccount = _ZangCommissionAccount;
     }
 
-    function listToken(uint256 _tokenId, uint256 _price, uint256 _amount) public whenNotPaused {
+    function listToken(uint256 _tokenId, uint256 _price, uint256 _amount) external whenNotPaused {
         require(ZangNFTAddress.exists(_tokenId), "Token does not exist");
         require(_amount <= ZangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
         require(_amount > 0, "Amount must be greater than 0"); // Opt.
@@ -64,7 +64,7 @@ contract Marketplace is Pausable, Ownable {
         emit TokenListed(_tokenId, msg.sender, _amount, _price);
     }
 
-    function editListingAmount(uint256 _tokenId, uint256 _listingId, uint256 _amount, uint256 _expectedAmount) public whenNotPaused {
+    function editListingAmount(uint256 _tokenId, uint256 _listingId, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
         require(ZangNFTAddress.exists(_tokenId), "Token does not exist");
         require(_amount <= ZangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
         require(_amount > 0, "Amount must be greater than 0"); // Opt.
@@ -76,7 +76,7 @@ contract Marketplace is Pausable, Ownable {
         emit TokenListed(_tokenId, msg.sender, _amount, listings[_tokenId][_listingId].price);
     }
     
-    function editListing(uint256 _tokenId, uint256 _listingId, uint256 _price, uint256 _amount, uint256 _expectedAmount) public whenNotPaused {
+    function editListing(uint256 _tokenId, uint256 _listingId, uint256 _price, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
         require(ZangNFTAddress.exists(_tokenId), "Token does not exist");
         require(_amount <= ZangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
         require(_amount > 0, "Amount must be greater than 0"); // Opt.
@@ -90,7 +90,7 @@ contract Marketplace is Pausable, Ownable {
         emit TokenListed(_tokenId, msg.sender, _amount, _price);
     }
 
-    function editListingPrice(uint256 _tokenId, uint256 _listingId, uint256 _price) public whenNotPaused {
+    function editListingPrice(uint256 _tokenId, uint256 _listingId, uint256 _price) external whenNotPaused {
         require(ZangNFTAddress.exists(_tokenId), "Token does not exist");
         require(_price > 0, "Price must be greater than 0");
         require(listings[_tokenId][_listingId].seller != address(0), "Listing does not exist"); // Opt.
@@ -100,7 +100,7 @@ contract Marketplace is Pausable, Ownable {
         emit TokenListed(_tokenId, msg.sender, listings[_tokenId][_listingId].amount, _price);
     }
 
-    function delistToken(uint256 _tokenId, uint256 _listingId) public whenNotPaused {
+    function delistToken(uint256 _tokenId, uint256 _listingId) external whenNotPaused {
         require(_listingId < listingCount[_tokenId], "Listing ID out of bounds"); // Opt.
         require(listings[_tokenId][_listingId].seller != address(0), "Cannot interact with a delisted listing"); // Opt.
         require(listings[_tokenId][_listingId].seller == msg.sender, "Only the seller can delist");
@@ -133,7 +133,7 @@ contract Marketplace is Pausable, Ownable {
         require(sent, "Could not send seller earnings");
     }
 
-    function buyToken(uint256 _tokenId, uint256 _listingId, uint256 _amount) public payable whenNotPaused {
+    function buyToken(uint256 _tokenId, uint256 _listingId, uint256 _amount) external payable whenNotPaused {
         require(_listingId < listingCount[_tokenId], "Listing index out of bounds");
         require(listings[_tokenId][_listingId].seller != address(0), "Cannot interact with a delisted listing");
         require(listings[_tokenId][_listingId].seller != msg.sender, "Cannot buy from yourself");
