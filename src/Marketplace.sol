@@ -145,11 +145,7 @@ contract Marketplace is Pausable, Ownable {
         uint256 price = listings[_tokenId][_listingId].price;
         // check if listing is satisfied
         require(msg.value == price * _amount, "Price does not match");
-
-        _handleFunds(_tokenId, seller);
-
-        ZangNFTAddress.safeTransferFrom(seller, msg.sender, _tokenId, _amount, "");
-
+        
         // Update listing
         listings[_tokenId][_listingId].amount -= _amount;
 
@@ -159,5 +155,8 @@ contract Marketplace is Pausable, Ownable {
         }
 
         emit TokenPurchased(_tokenId, msg.sender, seller, _amount, price);
+
+        _handleFunds(_tokenId, seller);
+        ZangNFTAddress.safeTransferFrom(seller, msg.sender, _tokenId, _amount, "");
     }
 }
