@@ -25,20 +25,23 @@ contract ZangNFTtest is DSTest {
     }
 
     function setUp() public {
-        zangnft = new ZangNFT();
+        zangnft = new ZangNFT("ZangNFT", "ZNG");
         IZangNFT izang = IZangNFT(address(zangnft));
         marketplace = new Marketplace(izang, zangCommissionAccount);
     }
     function test_mint(string memory uri, string memory title, string memory description, uint amount) public {
-        uint preBalance = zangnft.balanceOf(address(this), 1);
-         uint id = zangnft.mint(uri, title, description, amount, 1000, address(0x1), "");
-         uint postBalance = zangnft.balanceOf(address(this), id);
-         assertEq(preBalance + amount, postBalance);
-         assertEq(zangnft.lastTokenId(), id);
-         address author = zangnft.authorOf(id);
-         assertEq(author, address(this));
-         string memory textURI = zangnft.textURI(id);
-         assertEq(textURI, uri);
+        address user = address(69);
+        hevm.startPrank(user);
+        uint preBalance = zangnft.balanceOf(user, 1);
+        uint id = zangnft.mint(uri, title, description, amount, 1000, address(0x1), "");
+        uint postBalance = zangnft.balanceOf(user, id);
+        assertEq(preBalance + amount, postBalance);
+        assertEq(zangnft.lastTokenId(), id);
+        address author = zangnft.authorOf(id);
+        assertEq(author, user);
+        string memory textURI = zangnft.textURI(id);
+        assertEq(textURI, uri);
+        hevm.stopPrank();
     }
 
     function testFail_exists_token_without_mints(uint tokenId) public {
@@ -46,14 +49,17 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_listing() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint numTokens = 10;
         uint id = zangnft.mint("text", "title", "description", numTokens, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, numTokens);
         (uint256 price, address seller, uint256 amount) = marketplace.listings(id, 0);
         assertEq(price, 100);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, numTokens);
+        hevm.stopPrank();
     }
 
     function test_listing_non_existent_token() public {
@@ -62,34 +68,44 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_listing_more_than_owned() public {
+        hevm.startPrank(address(69));
         uint numTokens = 10;
         uint id = zangnft.mint("text", "title", "description", numTokens, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         hevm.expectRevert("Not enough tokens to list");
         marketplace.listToken(id, 100, numTokens + 1);
+        hevm.stopPrank();
     }
 
     function test_listing_without_approval() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         hevm.expectRevert("Marketplace contract is not approved");
         marketplace.listToken(id, 100, 10);
+        hevm.stopPrank();
     }
 
     function test_listing_with_amount_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         hevm.expectRevert("Amount must be greater than 0");
         marketplace.listToken(id, 100, 0);
+        hevm.stopPrank();
     }
 
     function test_listing_with_price_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         hevm.expectRevert("Price must be greater than 0");
         marketplace.listToken(id, 0, 10);
+        hevm.stopPrank();
     }
 
     function test_list_two_tokens() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id1 = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         uint id2 = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
@@ -97,30 +113,36 @@ contract ZangNFTtest is DSTest {
         marketplace.listToken(id2, 200, 10);
         (uint256 price, address seller, uint256 amount) = marketplace.listings(id1, 0);
         assertEq(price, 100);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
         (price, seller, amount) = marketplace.listings(id2, 0);
         assertEq(price, 200);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
+        hevm.stopPrank();
     }
 
     function test_two_listings_for_same_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         marketplace.listToken(id, 200, 10);
         (uint256 price, address seller, uint256 amount) = marketplace.listings(id, 0);
         assertEq(price, 100);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
         (price, seller, amount) = marketplace.listings(id, 1);
         assertEq(price, 200);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
+        hevm.stopPrank();
     }
 
     function test_delist_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
         (uint256 price, address seller, uint256 amount) = marketplace.listings(1, 0);
         assertEq(price, 0);
         assertEq(seller, address(0x0));
@@ -132,7 +154,7 @@ contract ZangNFTtest is DSTest {
         marketplace.listToken(id, 100, 10);
         (price, seller, amount) = marketplace.listings(id, 0);
         assertEq(price, 100);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
 
         marketplace.delistToken(id, 0);
@@ -140,6 +162,7 @@ contract ZangNFTtest is DSTest {
         assertEq(price, 0);
         assertEq(seller, address(0x0));
         assertEq(amount, 0);
+        hevm.stopPrank();
     }
 
     function test_delist_nonexistent_listing() public {
@@ -148,19 +171,24 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_delist_a_delisted_listing() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         marketplace.delistToken(id, 0);
         hevm.expectRevert("Cannot interact with a delisted listing");
         marketplace.delistToken(id, 0);
+        hevm.stopPrank();
     }
 
     function test_delist_someone_else_listing() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("texturi", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
-        zangnft.safeTransferFrom(address(this), address(1559), id, 10, "");
+        zangnft.safeTransferFrom(user, address(1559), id, 10, "");
+        hevm.stopPrank();
         hevm.prank(address(1559));
         hevm.expectRevert("Only the seller can delist");
         marketplace.delistToken(id, 0);
@@ -174,7 +202,7 @@ contract ZangNFTtest is DSTest {
         assertEq(zangnft.balanceOf(minter, id), amount);
         zangnft.setApprovalForAll(address(marketplace), true);
         uint price = 1 ether;
-        
+
         marketplace.listToken(id, price, amount);
         hevm.stopPrank();
 
@@ -231,27 +259,33 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_buy_delisted_listing() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         marketplace.delistToken(id, 0);
         hevm.expectRevert("Cannot interact with a delisted listing");
         marketplace.buyToken(id, 0, 10);
+        hevm.stopPrank();
     }
 
     function test_buy_own_listing() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         hevm.expectRevert("Cannot buy from yourself");
         marketplace.buyToken(id, 0, 10);
+        hevm.stopPrank();
     }
 
     function test_buy_more_than_listed() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         hevm.expectRevert("Not enough tokens to buy");
+        hevm.stopPrank();
         hevm.prank(address(1));
         marketplace.buyToken(id, 0, 11);
     }
@@ -347,40 +381,51 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_listing_more_than_owned() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Not enough tokens to list");
         marketplace.editListing(id, 0, 2 ether, 11, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_with_amount_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Amount must be greater than 0");
         marketplace.editListing(id, 0, 2 ether, 0, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_with_price_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Price must be greater than 0");
         marketplace.editListing(id, 0, 0 ether, 10, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_nonexistent_listing() public {
+        hevm.startPrank(address(69));
         zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         hevm.expectRevert("Listing does not exist");
         marketplace.editListing(1, 0, 2 ether, 10, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_someone_else_listing() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        zangnft.safeTransferFrom(address(this), address(1), id, 5, "");
+        zangnft.safeTransferFrom(user, address(1), id, 5, "");
+        hevm.stopPrank();
 
         hevm.prank(address(1));
         hevm.expectRevert("Only seller can edit listing");
@@ -409,6 +454,8 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_listing_price() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
@@ -416,8 +463,9 @@ contract ZangNFTtest is DSTest {
 
         (uint price, address seller, uint amount) = marketplace.listings(id, 0);
         assertEq(price, 2 ether);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_price_of_nonexistent_token() public {
@@ -426,24 +474,31 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_listing_price_with_price_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Price must be greater than 0");
         marketplace.editListingPrice(id, 0, 0 ether);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_price_of_nonexistent_listing() public {
+        hevm.startPrank(address(69));
         zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         hevm.expectRevert("Listing does not exist");
         marketplace.editListingPrice(1, 0, 2 ether);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_price_of_someone_else_listing() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        zangnft.safeTransferFrom(address(this), address(1), id, 5, "");
+        zangnft.safeTransferFrom(user, address(1), id, 5, "");
+        hevm.stopPrank();
 
         hevm.prank(address(1));
         hevm.expectRevert("Only seller can edit listing");
@@ -478,6 +533,8 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_listing_amount() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
@@ -485,42 +542,54 @@ contract ZangNFTtest is DSTest {
 
         (uint price, address seller, uint amount) = marketplace.listings(id, 0);
         assertEq(price, 1 ether);
-        assertEq(seller, address(this));
+        assertEq(seller, user);
         assertEq(amount, 10);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_amount_of_nonexistent_token() public {
+        hevm.startPrank(address(69));
         hevm.expectRevert("Token does not exist");
         marketplace.editListingAmount(1, 0, 5, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_amount_with_more_than_owned() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Not enough tokens to list");
         marketplace.editListingAmount(id, 0, 11, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_amount_with_amount_zero() public {
+        hevm.startPrank(address(69));
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
         hevm.expectRevert("Amount must be greater than 0");
         marketplace.editListingAmount(id, 0, 0, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_amount_of_non_existent_listing() public {
+        hevm.startPrank(address(69));
         zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         hevm.expectRevert("Listing does not exist");
         marketplace.editListingAmount(1, 0, 5, 5);
+        hevm.stopPrank();
     }
 
     function test_edit_listing_amount_of_someone_else_listing() public {
+        address user = address(69);
+        hevm.startPrank(user);
         uint id = zangnft.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangnft.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        zangnft.safeTransferFrom(address(this), address(1), id, 5, "");
+        zangnft.safeTransferFrom(user, address(1), id, 5, "");
+        hevm.stopPrank();
 
         hevm.prank(address(1));
         hevm.expectRevert("Only seller can edit listing");

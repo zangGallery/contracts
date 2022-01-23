@@ -3,14 +3,14 @@ pragma solidity ^0.8.6;
 
 import {Base64} from "./MetadataUtils.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "./ERC1155OnChain.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "./ERC2981PerTokenRoyalties.sol";
 import {StringUtils} from "./StringUtils.sol";
 
 contract ZangNFT is
-    ERC1155OnChain,
-    IERC1155MetadataURI,
+    ERC1155Supply,
     ERC2981PerTokenRoyalties
 {
     using Counters for Counters.Counter;
@@ -24,13 +24,19 @@ contract ZangNFT is
 
     mapping(uint256 => address) private _authors;
 
-    constructor() ERC1155OnChain("ZangNFT", "ZNG") {}
+    string public name;
+    string public symbol;
+
+    constructor(string memory name_, string memory symbol_) ERC1155("") {
+        name = name_;
+        symbol = symbol_;
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
-        override(ERC1155OnChain, ERC2981PerTokenRoyalties, IERC165)
+        override(ERC1155, ERC2981PerTokenRoyalties)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -40,12 +46,7 @@ contract ZangNFT is
         return _tokenIds.current();
     }
 
-    function exists(uint256 _tokenId) public view returns (bool) {
-        if(_tokenId == 0) return false;
-        return lastTokenId() >= _tokenId;
-    }
-
-    function uri(uint256 tokenId) external view override returns (string memory) {
+    function uri(uint256 tokenId) public view override returns (string memory) {
         require(exists(tokenId), "ZangNFT: uri query for nonexistent token");
         string memory json = Base64.encode(
             bytes(
