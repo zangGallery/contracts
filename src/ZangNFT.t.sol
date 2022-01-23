@@ -247,10 +247,17 @@ contract ZangNFTtest is DSTest {
         marketplace.buyToken{value: 10 ether}(id, 0, 10);
         hevm.stopPrank();
 
+        // 10 Ether
+        // 5% of 10 ETH = 0.5 ETH goes to zang
+        // There's 9.5 ETH left
+        // 10% of 9.5 ETH = 0.95 ETH goes to the minter
+        // 90% of 9.5 ETH = 8.55 ETH goes to the seller
+
         assertEq(buyer.balance, 0);
         assertEq(zangCommissionAccount.balance, 0.5 ether);
-        assertEq(minter.balance, 1 ether);
-        assertEq(receiver.balance, 8.5 ether);
+        assertEq(minter.balance, 0.95 ether);
+        assertEq(receiver.balance, 8.55 ether);
+        assertEq(zangCommissionAccount.balance + minter.balance + receiver.balance, 10 ether);
     }
 
     function test_buy_nonexistent_listing() public {

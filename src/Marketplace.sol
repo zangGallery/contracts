@@ -117,12 +117,14 @@ contract Marketplace is Pausable, Ownable {
     }
 
     function _handleFunds(uint256 _tokenId, address seller) private {
-        // TODO: Platform fee + Zang commission must not go over 100%
-        // TODO: Test integer division rounding errors
-        uint256 platformFee = (msg.value * platformFeePercentage) / 10000;
-        (address creator, uint256 creatorFee) = ZangNFTAddress.royaltyInfo(_tokenId, msg.value);
-        uint256 sellerEarnings = msg.value - platformFee - creatorFee;
-        // Test: The sum of three of them must be equal to msg.value
+        uint256 value = msg.value;
+        uint256 platformFee = (value * platformFeePercentage) / 10000;
+
+        uint256 remainder = value - platformFee;
+
+        (address creator, uint256 creatorFee) = ZangNFTAddress.royaltyInfo(_tokenId, remainder);
+        uint256 sellerEarnings = remainder - creatorFee;
+
         (bool sent, ) = payable(ZangCommissionAccount).call{value: platformFee}("");
         require(sent, "Could not send platform fee");
 
