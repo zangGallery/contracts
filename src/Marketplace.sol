@@ -145,7 +145,7 @@ contract Marketplace is Pausable, Ownable {
         uint256 price = listings[_tokenId][_listingId].price;
         // check if listing is satisfied
         require(msg.value == price * _amount, "Price does not match");
-        
+
         // Update listing
         listings[_tokenId][_listingId].amount -= _amount;
 

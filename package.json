@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/zangGallery/testing#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2"
+    "@openzeppelin/contracts": "^4.4.2"
   }
 }
