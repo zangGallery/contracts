@@ -124,4 +124,20 @@ contract ZangNFT is
         );
         return _textURIs[tokenId];
     }
+
+    function burn(address _from, uint256 _tokenId, uint256 _amount) external {
+        require(
+            _from == msg.sender || isApprovedForAll(_from, msg.sender),
+            "ZangNFT: caller is not owner nor approved"
+        );
+        
+        _burn(_from, _tokenId, _amount);
+
+        if(totalSupply(_tokenId) == 0) {
+            delete _textURIs[_tokenId];
+            delete _names[_tokenId];
+            delete _descriptions[_tokenId];
+            delete _authors[_tokenId];
+        }
+    }
 }

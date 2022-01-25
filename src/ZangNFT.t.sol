@@ -623,4 +623,67 @@ contract ZangNFTtest is DSTest {
         marketplace.editListingAmount(id, 0, 5, 5);
         hevm.stopPrank();
     }
+
+    function test_burn_some() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.burn(user, id, 5);
+
+        string memory uri = zangnft.uri(id);
+
+        assertEq(zangnft.totalSupply(id), 10);
+
+        hevm.stopPrank();
+    }
+
+    function test_burn_all() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.burn(user, id, 15);
+
+        hevm.expectRevert("ZangNFT: uri query for nonexistent token");
+        string memory uri = zangnft.uri(id);
+
+        assertEq(zangnft.totalSupply(id), 0);
+
+        hevm.expectRevert("ZangNFT: author query for nonexistent token");
+        zangnft.authorOf(id);
+
+        hevm.stopPrank();
+    }
+
+    function test_burn_someone_else_token() public {
+        address user = address(69);
+        hevm.prank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+
+        address burner = address(420);
+        hevm.startPrank(burner);
+
+        hevm.expectRevert("ZangNFT: caller is not owner nor approved");
+        zangnft.burn(user, id, 5);
+
+        assertEq(zangnft.totalSupply(id), 15);
+
+        hevm.stopPrank();
+    }
+
+    function test_burn_someone_else_token_while_approved() public {
+        address user = address(69);
+        address burner = address(420);
+
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(burner, true);
+        hevm.stopPrank();
+
+        hevm.startPrank(burner);
+
+        zangnft.burn(user, id, 5);
+        assertEq(zangnft.totalSupply(id), 10);
+
+        hevm.stopPrank();
+    }
 }
