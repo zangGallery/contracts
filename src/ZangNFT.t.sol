@@ -686,4 +686,79 @@ contract ZangNFTtest is DSTest {
 
         hevm.stopPrank();
     }
+
+    function test_list_burned_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(address(marketplace), true);
+        zangnft.burn(user, id, 5);
+        hevm.expectRevert("Not enough tokens to list");
+        marketplace.listToken(id, 1 ether, 15);
+
+        marketplace.listToken(id, 1 ether, 10);
+        hevm.stopPrank();
+    }
+
+    function test_list_burned_all_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(address(marketplace), true);
+        zangnft.burn(user, id, 15);
+        hevm.expectRevert("Token does not exist");
+        marketplace.listToken(id, 1 ether, 15);
+        hevm.stopPrank();
+    }
+
+    function test_buy_listing_of_burned_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(address(marketplace), true);
+        marketplace.listToken(id, 1 ether, 15);
+        zangnft.burn(user, id, 5);
+        hevm.stopPrank();
+
+        address buyer = address(420);
+        hevm.startPrank(buyer);
+        hevm.deal(buyer, 15 ether);
+        hevm.expectRevert("Seller does not have enough tokens anymore");
+        marketplace.buyToken{value: 15 ether}(id, 0, 15);
+        hevm.stopPrank();
+    }
+
+    function test_buy_listing_of_burned_all_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(address(marketplace), true);
+        marketplace.listToken(id, 1 ether, 15);
+        zangnft.burn(user, id, 15);
+        hevm.stopPrank();
+
+        address buyer = address(420);
+        hevm.startPrank(buyer);
+        hevm.deal(buyer, 15 ether);
+        hevm.expectRevert("Token does not exist anymore");
+        marketplace.buyToken{value: 15 ether}(id, 0, 15);
+        hevm.stopPrank();
+    }
+
+    function test_delist_listing_of_burned_all_token() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint id = zangnft.mint("text", "title", "description", 15, 1000, address(0x1), "");
+        zangnft.setApprovalForAll(address(marketplace), true);
+        marketplace.listToken(id, 1 ether, 15);
+        zangnft.burn(user, id, 15);
+
+        marketplace.delistToken(id, 0);
+
+        (uint256 price, address seller, uint256 amount) = marketplace.listings(id, 0);
+        assertEq(price, 0);
+        assertEq(seller, address(0x0));
+        assertEq(amount, 0);
+        hevm.stopPrank();
+    }
 }
