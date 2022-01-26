@@ -127,13 +127,18 @@ contract Marketplace is Pausable, Ownable {
         uint256 remainder = value - platformFee;
 
         (address creator, uint256 creatorFee) = ZangNFTAddress.royaltyInfo(_tokenId, remainder);
-        uint256 sellerEarnings = remainder - creatorFee;
 
-        (bool sent, ) = payable(ZangCommissionAccount).call{value: platformFee}("");
+        uint256 sellerEarnings = remainder;
+        bool sent;
+
+        if(creatorFee > 0) {
+            sellerEarnings -= creatorFee;
+            (sent, ) = payable(creator).call{value: creatorFee}("");
+            require(sent, "Could not send creator fee");
+        }
+
+        (sent, ) = payable(ZangCommissionAccount).call{value: platformFee}("");
         require(sent, "Could not send platform fee");
-
-        (sent, ) = payable(creator).call{value: creatorFee}("");
-        require(sent, "Could not send creator fee");
 
         (sent, ) = payable(seller).call{value: sellerEarnings}("");
         require(sent, "Could not send seller earnings");
