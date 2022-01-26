@@ -46,6 +46,16 @@ contract ZangNFT is
         return _tokenIds.current();
     }
 
+    function nameOf(uint256 tokenId) public view returns (string memory) {
+        require(exists(tokenId), "ZangNFT: name query for nonexistent token");
+        return _names[tokenId];
+    }
+
+    function descriptionOf(uint256 tokenId) public view returns (string memory) {
+        require(exists(tokenId), "ZangNFT: description query for nonexistent token");
+        return _descriptions[tokenId];
+    }
+
     function uri(uint256 tokenId) public view override returns (string memory) {
         require(exists(tokenId), "ZangNFT: uri query for nonexistent token");
         string memory json = Base64.encode(

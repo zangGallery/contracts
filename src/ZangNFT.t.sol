@@ -29,18 +29,20 @@ contract ZangNFTtest is DSTest {
         IZangNFT izang = IZangNFT(address(zangnft));
         marketplace = new Marketplace(izang, zangCommissionAccount);
     }
-    function test_mint(string memory uri, string memory title, string memory description, uint amount) public {
+    function test_mint(string memory preTextURI, string memory title, string memory description, uint amount) public {
         address user = address(69);
         hevm.startPrank(user);
         uint preBalance = zangnft.balanceOf(user, 1);
-        uint id = zangnft.mint(uri, title, description, amount, 1000, address(0x1), "");
+        uint id = zangnft.mint(preTextURI, title, description, amount, 1000, address(0x1), "");
         uint postBalance = zangnft.balanceOf(user, id);
         assertEq(preBalance + amount, postBalance);
         assertEq(zangnft.lastTokenId(), id);
         address author = zangnft.authorOf(id);
         assertEq(author, user);
-        string memory textURI = zangnft.textURI(id);
-        assertEq(textURI, uri);
+        string memory postTextURI = zangnft.textURI(id);
+        assertEq(postTextURI, preTextURI);
+        assertEq(zangnft.nameOf(id), title);
+        assertEq(zangnft.descriptionOf(id), description);
         hevm.stopPrank();
     }
 
@@ -634,6 +636,10 @@ contract ZangNFTtest is DSTest {
 
         assertEq(zangnft.totalSupply(id), 10);
 
+        assertEq(zangnft.textURI(id), "text");
+        assertEq(zangnft.nameOf(id), "title");
+        assertEq(zangnft.descriptionOf(id), "description");
+
         hevm.stopPrank();
     }
 
@@ -645,6 +651,12 @@ contract ZangNFTtest is DSTest {
 
         hevm.expectRevert("ZangNFT: uri query for nonexistent token");
         string memory uri = zangnft.uri(id);
+
+        hevm.expectRevert("ZangNFT: name query for nonexistent token");
+        string memory name = zangnft.nameOf(id);
+
+        hevm.expectRevert("ZangNFT: description query for nonexistent token");
+        string memory description = zangnft.descriptionOf(id);
 
         assertEq(zangnft.totalSupply(id), 0);
 
