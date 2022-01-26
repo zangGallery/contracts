@@ -773,4 +773,17 @@ contract ZangNFTtest is DSTest {
         assertEq(amount, 0);
         hevm.stopPrank();
     }
+
+    function test_change_zang_commission_account_as_owner() public {
+        marketplace.setZangCommissionAccount(address(0x1));
+        assertEq(marketplace.ZangCommissionAccount(), address(0x1));
+    }
+
+    function test_change_zang_commission_account_as_not_owner() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        hevm.expectRevert("Ownable: caller is not the owner");
+        marketplace.setZangCommissionAccount(address(0x1));
+        hevm.stopPrank();
+    }
 }

@@ -51,6 +51,10 @@ contract Marketplace is Pausable, Ownable {
         ZangCommissionAccount = _ZangCommissionAccount;
     }
 
+    function setZangCommissionAccount(address _ZangCommissionAccount) public onlyOwner {
+        ZangCommissionAccount = _ZangCommissionAccount;
+    }
+
     function listToken(uint256 _tokenId, uint256 _price, uint256 _amount) external whenNotPaused {
         require(ZangNFTAddress.exists(_tokenId), "Token does not exist");
         require(_amount <= ZangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
