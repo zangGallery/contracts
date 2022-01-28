@@ -63,11 +63,11 @@ contract ZangNFT is
                 string(
                     abi.encodePacked(
                         '{ "name": "',
-                        StringUtils.insertAsciiBeforeString(_names[tokenId], '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(_names[tokenId], '"', '\\'),
                         '", ',
                         '"description" : ',
                         '"',
-                        StringUtils.insertAsciiBeforeString(_descriptions[tokenId], '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(_descriptions[tokenId], '"', '\\'),
                         '", ',
                         //'"image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '", '
                         '"textURI" : ',

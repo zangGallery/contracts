@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.6;
 
-pragma solidity ^0.8.0;
-
+import "../node_modules/@openzeppelin/contracts/utils/math/Math.sol";
+import {StringUtils} from "./StringUtils.sol";
 // import "hardhat/console.sol";
 
 /// [MIT License]
 library StringUtils {
-    function utfLength(bytes1 b) private pure returns (uint8) {
+    function utfLength(bytes1 b) internal pure returns (uint8) {
         if (b < 0x80) {
             return 1;
         } else if(b < 0xE0) {
@@ -23,17 +24,26 @@ library StringUtils {
     }
 
     function firstN(bytes memory arr, uint256 n) internal pure returns (bytes memory) {
-        bytes memory newArray = new bytes(n);
-        for (uint256 i = 0; i < n; i++) {
+        uint256 length = Math.min(n, arr.length);
+        bytes memory newArray = new bytes(length);
+        for (uint256 i = 0; i < length; i++) {
             newArray[i] = arr[i];
         }
 
         return newArray;
     }
 
-    function insertAsciiBefore(bytes memory str, bytes1 target, bytes1 insert) internal pure returns (bytes memory) {
+    function insertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) internal pure returns (bytes memory) {
+        // You can't insert something before a prefix byte (you technically could, but it would be really counter-intuitive)
         require(utfLength(target) == 1, "StringUtils: target must be ASCII");
-        require(utfLength(insert) == 1, "StringUtils: insert must be ASCII");
+        // TODO: Evaluate if this should be checked   
+        //require(utfLength(inhsert) == 1, "StringUtils: insert must be ASCII");
+
+        for (uint256 i = 0; i < str.length; i++) {
+            if (utfLength(str[i]) + i > str.length) {
+                revert("StringUtils: not a valid UTF-8 string");
+            }
+        }
 
         bytes memory newString = new bytes(str.length * 2);
         uint256 from = 0;
@@ -61,7 +71,7 @@ library StringUtils {
         return firstN(newString, to);
     }
 
-    function insertAsciiBeforeString(string memory str, bytes1 target, bytes1 insert) internal pure returns (string memory) {
-        return string(insertAsciiBefore(bytes(str), target, insert));
+    function insertBeforeAsciiString(string memory str, bytes1 target, bytes1 insert) internal pure returns (string memory) {
+        return string(insertBeforeAscii(bytes(str), target, insert));
     }
 }

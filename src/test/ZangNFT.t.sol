@@ -2,8 +2,9 @@
 pragma solidity ^0.8.6;
 import "ds-test/test.sol";
 
-import "./ZangNFT.sol";
-import "./Marketplace.sol";
+import "../ZangNFT.sol";
+import "../Marketplace.sol";
+import {StringUtils} from "../StringUtils.sol";
 
 interface Hevm {
     function prank(address) external;
@@ -775,7 +776,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_change_zang_commission_account_as_owner() public {
-        marketplace.setzangCommissionAccount(address(0x1));
+        marketplace.setZangCommissionAccount(address(0x1));
         assertEq(marketplace.zangCommissionAccount(), address(0x1));
     }
 
@@ -783,7 +784,30 @@ contract ZangNFTtest is DSTest {
         address user = address(69);
         hevm.startPrank(user);
         hevm.expectRevert("Ownable: caller is not the owner");
-        marketplace.setzangCommissionAccount(address(0x1));
+        marketplace.setZangCommissionAccount(address(0x1));
         hevm.stopPrank();
+    }
+
+    function test_utf_length_with_one_byte_chars() public {
+        uint n = StringUtils.utfLength("a");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength("b");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength("+");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength("-");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength("*");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength(" ");
+        assertEq(n, 1);
+
+        n = StringUtils.utfLength("@");
+        assertEq(n, 1);
     }
 }
