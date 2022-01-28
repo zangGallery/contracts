@@ -51,7 +51,7 @@ contract Marketplace is Pausable, Ownable {
         zangCommissionAccount = _zangCommissionAccount;
     }
 
-    function setzangCommissionAccount(address _zangCommissionAccount) public onlyOwner {
+    function setZangCommissionAccount(address _zangCommissionAccount) public onlyOwner {
         zangCommissionAccount = _zangCommissionAccount;
     }
 
