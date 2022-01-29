@@ -788,26 +788,30 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
     }
 
-    function test_utf_length_with_one_byte_chars() public {
-        uint n = StringUtils.utfLength("a");
-        assertEq(n, 1);
+    function test_buy_with_small_wei() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint amount = 15;
+        uint id = zangNFT.mint("text", "title", "description", amount, 1000, address(0x1), "");
+        zangNFT.setApprovalForAll(address(marketplace), true);
+        uint price = 3 wei;
+        marketplace.listToken(id, price, amount);
+        hevm.stopPrank();
 
-        n = StringUtils.utfLength("b");
-        assertEq(n, 1);
+        address buyer = address(420);
+        hevm.startPrank(buyer);
+        hevm.deal(buyer, price*amount);
+        marketplace.buyToken{value: price*amount}(id, 0, 15);
+        hevm.stopPrank();
 
-        n = StringUtils.utfLength("+");
-        assertEq(n, 1);
-
-        n = StringUtils.utfLength("-");
-        assertEq(n, 1);
-
-        n = StringUtils.utfLength("*");
-        assertEq(n, 1);
-
-        n = StringUtils.utfLength(" ");
-        assertEq(n, 1);
-
-        n = StringUtils.utfLength("@");
-        assertEq(n, 1);
+        // 45 wei
+        // 5% of commission: 5% of 45 wei = 2.25 wei -> 2 wei
+        // 10% royaltes to 0x1: 10% of 43 wei = 4.3 wei -> 4 wei
+        // remaining: 39 wei instead of 38.45 wei
+        
+        assertEq(address(marketplace.zangCommissionAccount()).balance, 2 wei);
+        assertEq(address(0x1).balance, 4 wei);
+        assertEq(address(user).balance, 39 wei);
     }
+
 }
