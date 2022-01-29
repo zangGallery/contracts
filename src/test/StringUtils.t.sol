@@ -14,9 +14,17 @@ interface Hevm {
     function stopPrank() external;
 }
 
+contract StringUtilsWrapper {
+    function wrappedInsertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) public pure returns (bytes memory) {
+        return StringUtils.insertBeforeAscii(str, target, insert);
+    }
+}
+
 contract StringUtilsTest is DSTest {
     Hevm constant hevm = Hevm(HEVM_ADDRESS);
-    function setUp() public {}
+    StringUtilsWrapper wrapper = new StringUtilsWrapper();
+    function setUp() public {
+    }
 
     // 1: a, b, +, -, *, spazio, @
     function test_utf_length_with_one_byte_chars() public {
@@ -240,7 +248,7 @@ contract StringUtilsTest is DSTest {
                 }
             }
             if (validUtf) {
-                bytes memory t = StringUtils.insertBeforeAscii(s, charToFind, charToInsert);
+                bytes memory t = wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
 
                 for (uint256 i = 0; i < t.length; i += StringUtils.utfLength(t[i])) {
                     if (t[i] == charToFind) {
@@ -248,9 +256,8 @@ contract StringUtilsTest is DSTest {
                     }
                 }
             } else {
-                // TODO: Uncomment when forge is fixed
-                //hevm.expectRevert("StringUtils: not a valid UTF-8 string");
-                //StringUtils.insertBeforeAscii(s, charToFind, charToInsert);
+                hevm.expectRevert("StringUtils: not a valid UTF-8 string");
+                wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
             }
         }
     }
