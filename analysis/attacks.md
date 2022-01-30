@@ -8,7 +8,7 @@
 - zang's owner: the address registered on zang's marketplace contract as its owner. Could be an EOA or a contract address
 - zang's commission account: the address registered on zang's marketplace contract as the beneficiary of commissions. Could
   be the same account as zang's owner or a different account
-- EIP-2981: Ethereum Improvement Proposal 2981 (NFT Royalty Standard). Standardizes royalty mechanisms for
+- EIP-2981: [Ethereum Improvement Proposal 2981 (NFT Royalty Standard)](https://eips.ethereum.org/EIPS/eip-2981). Standardizes royalty mechanisms for
   NFTs
 
 ## Account Compromission
@@ -40,7 +40,7 @@ However, the design of zang's contracts is such that a takeover of any of the tw
     - If the commission account is compromised, the attacker can redirect the revenue stream to unauthorized entities
 - The attacker can block all sales on the platform
     - If the owner's account is compromised, the attacker can pause the marketplace contract
-    - If the commission account is compromised, the attacker can launch a Platform Freeze attack (see Platform Freeze, zang variant)
+    - If the commission account is compromised, the attacker can launch a [Platform Freeze attack](#platform-freeze)
 
 Since both takeovers are equally bad, we can at least render one takeover ineffective by establishing a hierarchy between the two accounts.
 This can be done by allowing the owner's account to change the address that receives commissions.
@@ -54,7 +54,7 @@ Description: An attack that involves blocking all sales on the platform for mali
 Note that there can be genuine reasons for blocking all sales, such as to prevent attackers from exploiting
 a vulnerability in zang's marketplace contract.
 
-Since zang's owner can pause all sales on the platform, an Account Compromission attack allows the attacker to
+Since zang's owner can pause all sales on the platform, an [Account Compromission attack](#account-compromission) allows the attacker to
 execute a Platform Freeze. However, there can be other ways to execute a Platform Freeze, such as through the
 compromission of zang's commission account (see Sale Denial attack, zang variant).
 
@@ -120,7 +120,7 @@ Note that this situation is equivalent to selling the NFT on a marketplace that 
 
 Similarly to the seller, the royalty recipient can block a sale by rejecting incoming Ether.
 
-However, the royalty recipient is in a unique position compared to the other entities. While a Platform Freeze
+However, the royalty recipient is in a unique position compared to the other entities. While a [Platform Freeze](#platform-freeze)
 would simply lead sellers to move to a new marketplace, most marketplaces support EIP-2981
 which means that this denial could continue even in a different marketplace.
 
@@ -224,7 +224,7 @@ The strongest mitigation possible involves preventing zang's owner from increasi
 zang from changing its commission model. A compromise solution involves imposing a timelock on commission percentage
 increases. In other words, zang's owner must wait a certain amount of time (e.g. 7 days) before the changes goes into effect.
 
-This solution allows users to move to a different marketplace (either because zang's owner has executed a Commission Fraud attack
+This solution allows users to move to a different marketplace (either because zang's owner has executed a [Commission Fraud attack](#commission-fraud)
 or because they simply believe the new commission to be too high), while still giving zang's owner enough freedom to adapt its
 commission model.
 
@@ -239,7 +239,7 @@ The solution is therefore to prevent any increase of the royalty percentage, wit
 ## Note: Execution equivalency
 
 An important security consideration for DAOs interacting with zang concerns the equivalency between
-certain actions. For example, a seller executing a Sale Denial attack is equivalent to a seller never listing
+certain actions. For example, a seller executing a [Sale Denial](#sale-denial) attack is equivalent to a seller never listing
 the NFT in the first place. While this is a sufficient analysis for EOAs, DAOs might vote differently for
 equivalent actions.
 
