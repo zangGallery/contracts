@@ -40,7 +40,7 @@ However, the design of zang's contracts is such that a takeover of any of the tw
     - If the commission account is compromised, the attacker can redirect the revenue stream to unauthorized entities
 - The attacker can block all sales on the platform
     - If the owner's account is compromised, the attacker can pause the marketplace contract
-    - If the commission account is compromised, the attacker can launch a [Platform Freeze attack](#platform-freeze)
+    - If the commission account is compromised, the attacker can launch a [Platform Freeze](#platform-freeze) attack
 
 Since both takeovers are equally bad, we can at least render one takeover ineffective by establishing a hierarchy between the two accounts.
 This can be done by allowing the owner's account to change the address that receives commissions.
@@ -54,7 +54,7 @@ Description: An attack that involves blocking all sales on the platform for mali
 Note that there can be genuine reasons for blocking all sales, such as to prevent attackers from exploiting
 a vulnerability in zang's marketplace contract.
 
-Since zang's owner can pause all sales on the platform, an [Account Compromission attack](#account-compromission) allows the attacker to
+Since zang's owner can pause all sales on the platform, an [Account Compromission](#account-compromission) attack allows the attacker to
 execute a Platform Freeze. However, there can be other ways to execute a Platform Freeze, such as through the
 compromission of zang's commission account (see Sale Denial attack, zang variant).
 
@@ -140,14 +140,14 @@ undecidability of the halting problem.
 
 ### Mitigation
 
-In order to prevent an attacker that compromised zang's commission account from executing a Platform Freeze attack, zang's owner must be able to
+In order to prevent an attacker that compromised zang's commission account from executing a [Platform Freeze](#platform-freeze) attack, zang's owner must be able to
 change zang's commission account.
 
 The seller's Sale Denial attack, while unusual, doesn't represent a potential problem, since it is equivalent to a private sale.
 
 To mitigate the royalty recipient Sale Denial, there are several possible solutions. The simplest one involves restricting royalties to only EOAs.
 Pros:
-- Prevents all Sale Denial attack, since EOAs always accept Ether
+- Prevents all Sale Denial attacks, since EOAs always accept Ether
 Cons:
 - Prevents the usage of contracts that split royalty revenues
 - Prevents DAOs from receiving royalties
@@ -224,7 +224,7 @@ The strongest mitigation possible involves preventing zang's owner from increasi
 zang from changing its commission model. A compromise solution involves imposing a timelock on commission percentage
 increases. In other words, zang's owner must wait a certain amount of time (e.g. 7 days) before the changes goes into effect.
 
-This solution allows users to move to a different marketplace (either because zang's owner has executed a [Commission Fraud attack](#commission-fraud)
+This solution allows users to move to a different marketplace (either because zang's owner has executed a [Commission Fraud](#commission-fraud) attack
 or because they simply believe the new commission to be too high), while still giving zang's owner enough freedom to adapt its
 commission model.
 
