@@ -86,7 +86,7 @@ contract ZangNFT is
         return output;
     }
 
-    function authorOf(uint256 _tokenId) external view returns (address) {
+    function authorOf(uint256 _tokenId) public view returns (address) {
         address author = _authors[_tokenId];
         require(
             author != address(0),
@@ -149,5 +149,23 @@ contract ZangNFT is
             delete _descriptions[_tokenId];
             delete _authors[_tokenId];
         }
+    }
+
+    function getTokenRoyaltyValue(uint256 id) public view returns (uint256) {
+        require(
+            exists(id),
+            "ZangNFT: getTokenRoyaltyValue query for nonexistent token"
+        );
+        return _getTokenRoyaltyValue(id);
+    }
+
+    function decreaseRoyaltyValue(uint256 _tokenId, uint256 _lowerValue) external {
+        require(
+            exists(_tokenId),
+            "ZangNFT: Decreasing royalty value for nonexistent token"
+        ); // Opt.
+        require(msg.sender == authorOf(_tokenId), "ZangNFT: caller is not author");
+
+        _decreaseRoyaltyValue(_tokenId, _lowerValue);
     }
 }

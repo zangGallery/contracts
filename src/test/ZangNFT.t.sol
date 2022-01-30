@@ -814,4 +814,50 @@ contract ZangNFTtest is DSTest {
         assertEq(address(user).balance, 39 wei);
     }
 
+    function test_decrease_royalty_value() public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint amount = 15;
+        // Royalty: 10%
+        uint id = zangNFT.mint("text", "title", "description", amount, 1000, address(0x1), "");
+
+        // 7.5%
+        zangNFT.decreaseRoyaltyValue(id, 750);
+        assertEq(zangNFT.getTokenRoyaltyValue(id), 750);
+
+        // 10%
+        hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
+        zangNFT.decreaseRoyaltyValue(id, 1000);
+
+        // 7.5%
+        hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
+        zangNFT.decreaseRoyaltyValue(id, 750);
+
+        // 7.49%
+        zangNFT.decreaseRoyaltyValue(id, 749);
+        assertEq(zangNFT.getTokenRoyaltyValue(id), 749);
+
+        // 100.1%
+        hevm.expectRevert("ERC2981Royalties: Too high");
+        zangNFT.decreaseRoyaltyValue(id, 10001);
+    }
+
+    function test_decrease_royalty_value_fuzz(uint256 _lowerValue) public {
+        address user = address(69);
+        hevm.startPrank(user);
+        uint amount = 15;
+        uint currentRoyaltyValue = 1000;
+        uint id = zangNFT.mint("text", "title", "description", amount, currentRoyaltyValue, address(0x1), "");
+
+       if(_lowerValue > 10000) {
+            hevm.expectRevert("ERC2981Royalties: Too high");
+            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
+        } else if(_lowerValue > currentRoyaltyValue) {
+            hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
+            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
+        } else {
+            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
+            assertEq(zangNFT.getTokenRoyaltyValue(id), _lowerValue);
+        }
+    }
 }

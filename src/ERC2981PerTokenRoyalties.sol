@@ -39,6 +39,21 @@ abstract contract ERC2981PerTokenRoyalties is ERC165, IERC2981Royalties {
         _royalties[id] = Royalty(recipient, value);
     }
 
+    function _decreaseRoyaltyValue(uint256 _tokenId, uint256 _lowerValue) internal {
+        require(
+            _lowerValue <= 10000,
+            "ERC2981Royalties: Too high"
+        );
+        require(_lowerValue < _royalties[_tokenId].value, "ERC2981Royalties: new value must be lower than current");
+
+        _royalties[_tokenId].value = _lowerValue;
+    }
+
+    function _getTokenRoyaltyValue(uint256 id) internal view returns (uint256) {
+        Royalty memory r = _royalties[id];
+        return r.value;
+    }
+
     /// @inheritdoc	IERC2981Royalties
     function royaltyInfo(uint256 tokenId, uint256 value)
         external
