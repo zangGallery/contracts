@@ -6,12 +6,12 @@ import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
-import "./ERC2981PerTokenRoyalties.sol";
+import "./ERC2981.sol";
 import {StringUtils} from "./StringUtils.sol";
 
 contract ZangNFT is
     ERC1155Supply,
-    ERC2981PerTokenRoyalties
+    ERC2981
 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -36,7 +36,7 @@ contract ZangNFT is
         public
         view
         virtual
-        override(ERC1155, ERC2981PerTokenRoyalties)
+        override(ERC1155, ERC2981)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -100,7 +100,7 @@ contract ZangNFT is
         string memory name_,
         string memory description_,
         uint256 amount_,
-        uint256 royaltyPercentage_, //NB: two decimals, so 10% is 1000
+        uint96 royaltyNumerator_, //NB: two decimals, so 10% is 1000
         address royaltyRecipient_,
         bytes memory data_
     ) external returns (uint256) {
@@ -111,7 +111,7 @@ contract ZangNFT is
         _names[newTokenId] = name_;
         _descriptions[newTokenId] = description_;
         _authors[newTokenId] = msg.sender;
-        _setTokenRoyalty(newTokenId, royaltyRecipient_, royaltyPercentage_);
+        _setTokenRoyalty(newTokenId, royaltyRecipient_, royaltyNumerator_);
 
         _mint(msg.sender, newTokenId, amount_, data_);
 
@@ -151,21 +151,25 @@ contract ZangNFT is
         }
     }
 
-    function getTokenRoyaltyValue(uint256 id) public view returns (uint256) {
-        require(
-            exists(id),
-            "ZangNFT: getTokenRoyaltyValue query for nonexistent token"
-        );
-        return _getTokenRoyaltyValue(id);
-    }
-
-    function decreaseRoyaltyValue(uint256 _tokenId, uint256 _lowerValue) external {
+    function decreaseRoyaltyNumerator(uint256 _tokenId, uint96 _lowerValue) external {
         require(
             exists(_tokenId),
-            "ZangNFT: Decreasing royalty value for nonexistent token"
+            "ZangNFT: Decreasing royalty numerator for nonexistent token"
         ); // Opt.
         require(msg.sender == authorOf(_tokenId), "ZangNFT: caller is not author");
 
-        _decreaseRoyaltyValue(_tokenId, _lowerValue);
+        _decreaseRoyaltyNumerator(_tokenId, _lowerValue);
+    }
+
+    function royaltyNumerator(uint256 _tokenId) external view returns (uint96) {
+        require(
+            exists(_tokenId),
+            "ZangNFT: Royalty info query for nonexistent token"
+        ); // Opt.
+        return _royaltyNumerator(_tokenId);
+    }
+
+    function royaltyDenominator() external pure returns (uint96) {
+        return _feeDenominator();
     }
 }

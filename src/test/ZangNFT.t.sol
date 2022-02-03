@@ -32,9 +32,10 @@ contract ZangNFTtest is DSTest {
     }
     function test_mint(string memory preTextURI, string memory title, string memory description, uint amount) public {
         address user = address(69);
+        uint96 royaltyNumerator = 1000;
         hevm.startPrank(user);
         uint preBalance = zangNFT.balanceOf(user, 1);
-        uint id = zangNFT.mint(preTextURI, title, description, amount, 1000, address(0x1), "");
+        uint id = zangNFT.mint(preTextURI, title, description, amount, royaltyNumerator, address(0x1), "");
         uint postBalance = zangNFT.balanceOf(user, id);
         assertEq(preBalance + amount, postBalance);
         assertEq(zangNFT.lastTokenId(), id);
@@ -44,6 +45,15 @@ contract ZangNFTtest is DSTest {
         assertEq(postTextURI, preTextURI);
         assertEq(zangNFT.nameOf(id), title);
         assertEq(zangNFT.descriptionOf(id), description);
+        assertEq(zangNFT.royaltyNumerator(id), royaltyNumerator);
+        assertEq(zangNFT.royaltyDenominator(), 10000);
+        (address royaltyRecipient, uint256 royaltyAmount) = zangNFT.royaltyInfo(id, 10000);
+        assertEq(royaltyRecipient, address(0x1));
+        assertEq(royaltyAmount, 1000);
+        (royaltyRecipient, royaltyAmount) = zangNFT.royaltyInfo(id, 20000);
+        assertEq(royaltyAmount, 2000);
+        (royaltyRecipient, royaltyAmount) = zangNFT.royaltyInfo(id, 10);
+        assertEq(royaltyAmount, 1);
         hevm.stopPrank();
     }
 
@@ -822,42 +832,42 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", amount, 1000, address(0x1), "");
 
         // 7.5%
-        zangNFT.decreaseRoyaltyValue(id, 750);
-        assertEq(zangNFT.getTokenRoyaltyValue(id), 750);
+        zangNFT.decreaseRoyaltyNumerator(id, 750);
+        assertEq(zangNFT.royaltyNumerator(id), 750);
 
         // 10%
-        hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
-        zangNFT.decreaseRoyaltyValue(id, 1000);
+        hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+        zangNFT.decreaseRoyaltyNumerator(id, 1000);
 
         // 7.5%
-        hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
-        zangNFT.decreaseRoyaltyValue(id, 750);
+        hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+        zangNFT.decreaseRoyaltyNumerator(id, 750);
 
         // 7.49%
-        zangNFT.decreaseRoyaltyValue(id, 749);
-        assertEq(zangNFT.getTokenRoyaltyValue(id), 749);
+        zangNFT.decreaseRoyaltyNumerator(id, 749);
+        assertEq(zangNFT.royaltyNumerator(id), 749);
 
         // 100.1%
-        hevm.expectRevert("ERC2981Royalties: Too high");
-        zangNFT.decreaseRoyaltyValue(id, 10001);
+        hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+        zangNFT.decreaseRoyaltyNumerator(id, 10001);
     }
 
-    function test_decrease_royalty_value_fuzz(uint256 _lowerValue) public {
+    function test_decrease_royalty_value_fuzz(uint96 _lowerValue) public {
         address user = address(69);
         hevm.startPrank(user);
         uint amount = 15;
-        uint currentRoyaltyValue = 1000;
+        uint96 currentRoyaltyValue = 1000;
         uint id = zangNFT.mint("text", "title", "description", amount, currentRoyaltyValue, address(0x1), "");
 
        if(_lowerValue > 10000) {
-            hevm.expectRevert("ERC2981Royalties: Too high");
-            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
+            hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+            zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
         } else if(_lowerValue > currentRoyaltyValue) {
-            hevm.expectRevert("ERC2981Royalties: new value must be lower than current");
-            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
+            hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+            zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
         } else {
-            zangNFT.decreaseRoyaltyValue(id, _lowerValue);
-            assertEq(zangNFT.getTokenRoyaltyValue(id), _lowerValue);
+            zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
+            assertEq(zangNFT.royaltyNumerator(id), _lowerValue);
         }
     }
 }
