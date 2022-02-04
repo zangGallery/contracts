@@ -2,61 +2,24 @@
 
 ## Glossary
 
-- EOA: Externally Owned Account. An address that is not a contract address
+- EOA: Externally Owned Account. An address that is not a contract address.
 - DAO: Decentralized Autonomous Organization. An organization involving a smart contract capable of executing
-  transactions on behalf of its members. Usually involves some sort of voting mechanism
-- zang's owner: the address registered on zang's marketplace contract as its owner. Could be an EOA or a contract address
+  transactions on behalf of its members. Usually involves some sort of voting mechanism.
+- zang's owner: the address registered on zang's marketplace contract as its owner. Could be an EOA or a contract address.
 - zang's commission account: the address registered on zang's marketplace contract as the beneficiary of commissions. Could
-  be the same account as zang's owner or a different account
+  be the same account as zang's owner or a different account.
 - EIP-2981: [Ethereum Improvement Proposal 2981 (NFT Royalty Standard)](https://eips.ethereum.org/EIPS/eip-2981). Standardizes royalty mechanisms for
-  NFTs
-
-## Account Compromission
-
-Description: An attack where a malicious entity gains access to an account and uses it to execute otherwise
-restricted operations.
-
-The most serious form of Account Compromission involves an attacker obtaining an account's private key, allowing
-the attacker to fully impersonate the victim. A milder version of this attack involves using an exploit in a
-contract to force the contract to execute some restricted actions (e.g. forcing a contract to sell an NFT).
-
-There are three noteworthy accounts that should be considered:
-- zang's owner
-- zang's commission account
-- Individual users
-
-### Mitigation
-
-The responsibility for securing an account falls on the account's owner; however, zang's contracts can mitigate
-damages by limiting the power of all accounts to the bare minimum.
-
-A noteworthy case involves a situation where zang's owner's account is compromised, but zang's commission account isn't (and
-vice versa).
-This situation can lead to a deadlock where no party is capable of stopping the other party, for better or worse.
-
-However, the design of zang's contracts is such that a takeover of any of the two accounts leads to the same effects:
-- zang's beneficiary of the commissions stops receiving revenue:
-    - If the owner's account is compromised, the attacker can pause the marketplace contract
-    - If the commission account is compromised, the attacker can redirect the revenue stream to unauthorized entities
-- The attacker can block all sales on the platform
-    - If the owner's account is compromised, the attacker can pause the marketplace contract
-    - If the commission account is compromised, the attacker can launch a [Platform Freeze](#platform-freeze) attack
-
-Since both takeovers are equally bad, we can at least render one takeover ineffective by establishing a hierarchy between the two accounts.
-This can be done by allowing the owner's account to change the address that receives commissions.
-
-Doing so enables zang's owner to stop further revenue theft by the attacker.
+  NFTs.
 
 ## Platform Freeze
 
 Description: An attack that involves blocking all sales on the platform for malicious purposes.
 
-Note that there can be genuine reasons for blocking all sales, such as to prevent attackers from exploiting
-a vulnerability in zang's marketplace contract.
+We introduced a freeze mechanism in the Marketplace contract to mitigate attacks on the platform in case of a vulnerability,
+but the freeze could happen maliciously.
 
-Since zang's owner can pause all sales on the platform, an [Account Compromission](#account-compromission) attack allows the attacker to
-execute a Platform Freeze. However, there can be other ways to execute a Platform Freeze, such as through the
-compromission of zang's commission account (see Sale Denial attack, zang variant).
+There can be other ways to execute a Platform Freeze, such as through the
+zang's commission account (see Sale Denial attack, zang variant).
 
 ### Mitigation
 
@@ -88,13 +51,8 @@ In other words, contracts can prevent a sale by refusing to accept Ether.
 
 ### zang
 
-Since zang's owner is also the owner of the zang commission account, everything that can be achieved
-by rejecting Ether can also be achieved by simply pausing the Marketplace contract. In other words, a
-Platform Freeze attack allows the attacker to execute a Sale Denial attack.
-
-The only interesting case is when the zang commission account gets compromised (e.g. private key leak)
-but zang's owner's account doesn't. In such case, the attacker could block all sales, leading to a Platform
-Freeze attack.
+If the zang's commission account refuses to accept Ether, every sale fails.
+Therefore a Sale Denial attack performed by zang's commission account is equivalent to a Platform Freeze.
 
 ### Seller
 
@@ -139,9 +97,6 @@ Side note: this is a special case of Rice's Theorem, which is itself a generaliz
 undecidability of the halting problem.
 
 ### Mitigation
-
-In order to prevent an attacker that compromised zang's commission account from executing a [Platform Freeze](#platform-freeze) attack, zang's owner must be able to
-change zang's commission account.
 
 The seller's Sale Denial attack, while unusual, doesn't represent a potential problem, since it is equivalent to a private sale.
 
