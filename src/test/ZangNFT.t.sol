@@ -12,6 +12,7 @@ interface Hevm {
     function deal(address, uint256) external;
     function startPrank(address) external;
     function stopPrank() external;
+    function warp(uint256) external;
 }
 
 contract ZangNFTtest is DSTest {
@@ -868,6 +869,98 @@ contract ZangNFTtest is DSTest {
         } else {
             zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
             assertEq(zangNFT.royaltyNumerator(id), _lowerValue);
+        }
+    }
+
+    function test_set_platform_fee_percentage() public {
+        uint16 currentFee = marketplace.platformFeePercentage();
+        assertEq(currentFee, 500);
+
+        hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+        marketplace.decreasePlatformFeePercentage(500);
+
+        hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+        marketplace.requestPlatformFeePercentageIncrease(500);
+
+        marketplace.decreasePlatformFeePercentage(100);
+        assertEq(marketplace.platformFeePercentage(), 100);
+
+        marketplace.decreasePlatformFeePercentage(0);
+        assertEq(marketplace.platformFeePercentage(), 0);
+
+        hevm.expectRevert("Platform fee percentage increase must be first requested");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        // Requesting an increase to 100 (i.e. 1%)
+        marketplace.requestPlatformFeePercentageIncrease(100);
+
+        hevm.expectRevert("Platform fee percentage increase is locked");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        hevm.warp(block.timestamp + 1 days);
+
+        hevm.expectRevert("Platform fee percentage increase is locked");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        hevm.warp(block.timestamp + 7 days);
+
+        // Increase finally succeeds
+        marketplace.applyPlatformFeePercentageIncrease();
+        assertEq(marketplace.platformFeePercentage(), 100);
+
+        hevm.expectRevert("Platform fee percentage increase must be first requested");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        // Request a new increase, this time to 200 (i.e. 2%)
+        marketplace.requestPlatformFeePercentageIncrease(200);
+
+        hevm.expectRevert("Platform fee percentage increase is locked");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        hevm.warp(block.timestamp + 1 days);
+
+        hevm.expectRevert("Platform fee percentage increase is locked");
+        marketplace.applyPlatformFeePercentageIncrease();
+
+        hevm.warp(block.timestamp + 7 days);
+
+        // Increase finally succeeds
+        marketplace.applyPlatformFeePercentageIncrease();
+        assertEq(marketplace.platformFeePercentage(), 200);
+    }
+
+    function test_set_platform_fee_percentage_fuzz(uint16 newFeePercentage) public {
+        uint16 currentFee = marketplace.platformFeePercentage();
+        if(newFeePercentage == currentFee) {
+            hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+            marketplace.decreasePlatformFeePercentage(newFeePercentage);
+
+            hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
+        } else if(newFeePercentage > currentFee) {
+            hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+            marketplace.decreasePlatformFeePercentage(newFeePercentage);
+
+            hevm.expectRevert("Platform fee percentage increase must be first requested");
+            marketplace.applyPlatformFeePercentageIncrease();
+
+            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
+            assertEq(marketplace.newPlatformFeePercentage(), newFeePercentage);
+            hevm.expectRevert("Platform fee percentage increase is locked");
+            marketplace.applyPlatformFeePercentageIncrease();
+
+            hevm.warp(block.timestamp + 7 days);
+            marketplace.applyPlatformFeePercentageIncrease();
+            assertEq(marketplace.platformFeePercentage(), newFeePercentage);
+
+            hevm.expectRevert("Platform fee percentage increase must be first requested");
+            marketplace.applyPlatformFeePercentageIncrease();
+        } else {
+            hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
+
+            marketplace.decreasePlatformFeePercentage(newFeePercentage);
+            assertEq(marketplace.platformFeePercentage(), newFeePercentage);
         }
     }
 }
