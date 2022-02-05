@@ -98,6 +98,10 @@ undecidability of the halting problem.
 
 ### Mitigation
 
+To migitate a Sale Denial attack due to zang's commission account (which could happen if either the commission account is controlled by
+a different entity than the owner's account, or if zang's commission account is a contract address with a potential exploit), we added an
+option to change the recipient of zang's commissions.
+
 The seller's Sale Denial attack, while unusual, doesn't represent a potential problem, since it is equivalent to a private sale.
 
 To mitigate the royalty recipient Sale Denial, there are several possible solutions. The simplest one involves restricting royalties to only EOAs.
