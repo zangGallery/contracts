@@ -154,7 +154,7 @@ contract ZangNFT is
     function decreaseRoyaltyNumerator(uint256 _tokenId, uint96 _lowerValue) external {
         require(
             exists(_tokenId),
-            "ZangNFT: Decreasing royalty numerator for nonexistent token"
+            "ZangNFT: decreasing royalty numerator for nonexistent token"
         ); // Opt.
         require(msg.sender == authorOf(_tokenId), "ZangNFT: caller is not author");
 
@@ -164,7 +164,7 @@ contract ZangNFT is
     function royaltyNumerator(uint256 _tokenId) external view returns (uint96) {
         require(
             exists(_tokenId),
-            "ZangNFT: Royalty info query for nonexistent token"
+            "ZangNFT: royalty info query for nonexistent token"
         ); // Opt.
         return _royaltyNumerator(_tokenId);
     }

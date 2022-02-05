@@ -77,7 +77,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_listing_non_existent_token() public {
-        hevm.expectRevert("Token does not exist");
+        hevm.expectRevert("Marketplace: token does not exist");
         marketplace.listToken(0, 100, 10);
     }
 
@@ -86,7 +86,7 @@ contract ZangNFTtest is DSTest {
         uint numTokens = 10;
         uint id = zangNFT.mint("text", "title", "description", numTokens, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
-        hevm.expectRevert("Not enough tokens to list");
+        hevm.expectRevert("Marketplace: not enough tokens to list");
         marketplace.listToken(id, 100, numTokens + 1);
         hevm.stopPrank();
     }
@@ -94,7 +94,7 @@ contract ZangNFTtest is DSTest {
     function test_listing_without_approval() public {
         hevm.startPrank(address(69));
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
-        hevm.expectRevert("Marketplace contract is not approved");
+        hevm.expectRevert("Marketplace: Marketplace contract is not approved");
         marketplace.listToken(id, 100, 10);
         hevm.stopPrank();
     }
@@ -103,7 +103,7 @@ contract ZangNFTtest is DSTest {
         hevm.startPrank(address(69));
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
-        hevm.expectRevert("Amount must be greater than 0");
+        hevm.expectRevert("Marketplace: amount must be greater than 0");
         marketplace.listToken(id, 100, 0);
         hevm.stopPrank();
     }
@@ -112,7 +112,7 @@ contract ZangNFTtest is DSTest {
         hevm.startPrank(address(69));
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
-        hevm.expectRevert("Price must be greater than 0");
+        hevm.expectRevert("Marketplace: price must be greater than 0");
         marketplace.listToken(id, 0, 10);
         hevm.stopPrank();
     }
@@ -180,7 +180,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_delist_nonexistent_listing() public {
-        hevm.expectRevert("Listing ID out of bounds");
+        hevm.expectRevert("Marketplace: listing ID out of bounds");
         marketplace.delistToken(1, 0);
     }
 
@@ -190,7 +190,7 @@ contract ZangNFTtest is DSTest {
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         marketplace.delistToken(id, 0);
-        hevm.expectRevert("Cannot interact with a delisted listing");
+        hevm.expectRevert("Marketplace: cannot interact with a delisted listing");
         marketplace.delistToken(id, 0);
         hevm.stopPrank();
     }
@@ -204,7 +204,7 @@ contract ZangNFTtest is DSTest {
         zangNFT.safeTransferFrom(user, address(1559), id, 10, "");
         hevm.stopPrank();
         hevm.prank(address(1559));
-        hevm.expectRevert("Only the seller can delist");
+        hevm.expectRevert("Marketplace: only the seller can delist");
         marketplace.delistToken(id, 0);
     }
 
@@ -275,7 +275,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_buy_nonexistent_listing() public {
-        hevm.expectRevert("Listing index out of bounds");
+        hevm.expectRevert("Marketplace: listing index out of bounds");
         marketplace.buyToken(1, 0, 10);
     }
 
@@ -285,7 +285,7 @@ contract ZangNFTtest is DSTest {
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
         marketplace.delistToken(id, 0);
-        hevm.expectRevert("Cannot interact with a delisted listing");
+        hevm.expectRevert("Marketplace: cannot interact with a delisted listing");
         marketplace.buyToken(id, 0, 10);
         hevm.stopPrank();
     }
@@ -295,7 +295,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
-        hevm.expectRevert("Cannot buy from yourself");
+        hevm.expectRevert("Marketplace: cannot buy from yourself");
         marketplace.buyToken(id, 0, 10);
         hevm.stopPrank();
     }
@@ -305,7 +305,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 100, 10);
-        hevm.expectRevert("Not enough tokens to buy");
+        hevm.expectRevert("Marketplace: not enough tokens to buy");
         hevm.stopPrank();
         hevm.prank(address(1));
         marketplace.buyToken(id, 0, 11);
@@ -325,7 +325,7 @@ contract ZangNFTtest is DSTest {
 
         hevm.startPrank(buyer);
         hevm.deal(buyer, 10 ether);
-        hevm.expectRevert("Seller does not have enough tokens anymore");
+        hevm.expectRevert("Marketplace: seller does not have enough tokens anymore");
         marketplace.buyToken{value: 10 ether}(id, 0, 10);
         hevm.stopPrank();
     }
@@ -342,7 +342,7 @@ contract ZangNFTtest is DSTest {
 
         hevm.startPrank(buyer);
         hevm.deal(buyer, 1 ether);
-        hevm.expectRevert("Price does not match");
+        hevm.expectRevert("Marketplace: price does not match");
         marketplace.buyToken{value: 1 ether}(id, 0, 10);
         hevm.stopPrank();
     }
@@ -397,7 +397,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_nonexistent_token() public {
-        hevm.expectRevert("Token does not exist");
+        hevm.expectRevert("Marketplace: token does not exist");
         marketplace.editListing(1, 0, 2 ether, 10, 5);
     }
 
@@ -406,7 +406,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Not enough tokens to list");
+        hevm.expectRevert("Marketplace: not enough tokens to list");
         marketplace.editListing(id, 0, 2 ether, 11, 5);
         hevm.stopPrank();
     }
@@ -416,7 +416,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Amount must be greater than 0");
+        hevm.expectRevert("Marketplace: amount must be greater than 0");
         marketplace.editListing(id, 0, 2 ether, 0, 5);
         hevm.stopPrank();
     }
@@ -426,7 +426,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Price must be greater than 0");
+        hevm.expectRevert("Marketplace: price must be greater than 0");
         marketplace.editListing(id, 0, 0 ether, 10, 5);
         hevm.stopPrank();
     }
@@ -434,7 +434,7 @@ contract ZangNFTtest is DSTest {
     function test_edit_nonexistent_listing() public {
         hevm.startPrank(address(69));
         zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
-        hevm.expectRevert("Listing does not exist");
+        hevm.expectRevert("Marketplace: listing does not exist");
         marketplace.editListing(1, 0, 2 ether, 10, 5);
         hevm.stopPrank();
     }
@@ -449,7 +449,7 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
 
         hevm.prank(address(1));
-        hevm.expectRevert("Only seller can edit listing");
+        hevm.expectRevert("Marketplace: only seller can edit listing");
         marketplace.editListing(id, 0, 2 ether, 5, 5);
     }
 
@@ -469,7 +469,7 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
 
         hevm.startPrank(seller);
-        hevm.expectRevert("Expected amount does not match");
+        hevm.expectRevert("Marketplace: expected amount does not match");
         marketplace.editListing(id, 0, 2 ether, 5, 5);
         hevm.stopPrank();
     }
@@ -490,7 +490,7 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_edit_listing_price_of_nonexistent_token() public {
-        hevm.expectRevert("Token does not exist");
+        hevm.expectRevert("Marketplace: token does not exist");
         marketplace.editListingPrice(1, 0, 2 ether);
     }
 
@@ -499,7 +499,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Price must be greater than 0");
+        hevm.expectRevert("Marketplace: price must be greater than 0");
         marketplace.editListingPrice(id, 0, 0 ether);
         hevm.stopPrank();
     }
@@ -507,7 +507,7 @@ contract ZangNFTtest is DSTest {
     function test_edit_listing_price_of_nonexistent_listing() public {
         hevm.startPrank(address(69));
         zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
-        hevm.expectRevert("Listing does not exist");
+        hevm.expectRevert("Marketplace: listing does not exist");
         marketplace.editListingPrice(1, 0, 2 ether);
         hevm.stopPrank();
     }
@@ -522,7 +522,7 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
 
         hevm.prank(address(1));
-        hevm.expectRevert("Only seller can edit listing");
+        hevm.expectRevert("Marketplace: only seller can edit listing");
         marketplace.editListingPrice(id, 0, 2 ether);
     }
 
@@ -570,7 +570,7 @@ contract ZangNFTtest is DSTest {
 
     function test_edit_listing_amount_of_nonexistent_token() public {
         hevm.startPrank(address(69));
-        hevm.expectRevert("Token does not exist");
+        hevm.expectRevert("Marketplace: token does not exist");
         marketplace.editListingAmount(1, 0, 5, 5);
         hevm.stopPrank();
     }
@@ -580,7 +580,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Not enough tokens to list");
+        hevm.expectRevert("Marketplace: not enough tokens to list");
         marketplace.editListingAmount(id, 0, 11, 5);
         hevm.stopPrank();
     }
@@ -590,7 +590,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         marketplace.listToken(id, 1 ether, 5);
-        hevm.expectRevert("Amount must be greater than 0");
+        hevm.expectRevert("Marketplace: amount must be greater than 0");
         marketplace.editListingAmount(id, 0, 0, 5);
         hevm.stopPrank();
     }
@@ -598,7 +598,7 @@ contract ZangNFTtest is DSTest {
     function test_edit_listing_amount_of_non_existent_listing() public {
         hevm.startPrank(address(69));
         zangNFT.mint("text", "title", "description", 10, 1000, address(0x1), "");
-        hevm.expectRevert("Listing does not exist");
+        hevm.expectRevert("Marketplace: listing does not exist");
         marketplace.editListingAmount(1, 0, 5, 5);
         hevm.stopPrank();
     }
@@ -613,7 +613,7 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
 
         hevm.prank(address(1));
-        hevm.expectRevert("Only seller can edit listing");
+        hevm.expectRevert("Marketplace: only seller can edit listing");
         marketplace.editListingAmount(id, 0, 5, 5);
     }
 
@@ -633,7 +633,7 @@ contract ZangNFTtest is DSTest {
         hevm.stopPrank();
 
         hevm.startPrank(seller);
-        hevm.expectRevert("Expected amount does not match");
+        hevm.expectRevert("Marketplace: expected amount does not match");
         marketplace.editListingAmount(id, 0, 5, 5);
         hevm.stopPrank();
     }
@@ -717,7 +717,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 15, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         zangNFT.burn(user, id, 5);
-        hevm.expectRevert("Not enough tokens to list");
+        hevm.expectRevert("Marketplace: not enough tokens to list");
         marketplace.listToken(id, 1 ether, 15);
 
         marketplace.listToken(id, 1 ether, 10);
@@ -730,7 +730,7 @@ contract ZangNFTtest is DSTest {
         uint id = zangNFT.mint("text", "title", "description", 15, 1000, address(0x1), "");
         zangNFT.setApprovalForAll(address(marketplace), true);
         zangNFT.burn(user, id, 15);
-        hevm.expectRevert("Token does not exist");
+        hevm.expectRevert("Marketplace: token does not exist");
         marketplace.listToken(id, 1 ether, 15);
         hevm.stopPrank();
     }
@@ -747,7 +747,7 @@ contract ZangNFTtest is DSTest {
         address buyer = address(420);
         hevm.startPrank(buyer);
         hevm.deal(buyer, 15 ether);
-        hevm.expectRevert("Seller does not have enough tokens anymore");
+        hevm.expectRevert("Marketplace: seller does not have enough tokens anymore");
         marketplace.buyToken{value: 15 ether}(id, 0, 15);
         hevm.stopPrank();
     }
@@ -764,7 +764,7 @@ contract ZangNFTtest is DSTest {
         address buyer = address(420);
         hevm.startPrank(buyer);
         hevm.deal(buyer, 15 ether);
-        hevm.expectRevert("Token does not exist anymore");
+        hevm.expectRevert("Marketplace: token does not exist anymore");
         marketplace.buyToken{value: 15 ether}(id, 0, 15);
         hevm.stopPrank();
     }
@@ -876,10 +876,10 @@ contract ZangNFTtest is DSTest {
         uint16 currentFee = marketplace.platformFeePercentage();
         assertEq(currentFee, 500);
 
-        hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+        hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
         marketplace.decreasePlatformFeePercentage(500);
 
-        hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+        hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
         marketplace.requestPlatformFeePercentageIncrease(500);
 
         marketplace.decreasePlatformFeePercentage(100);
@@ -888,18 +888,18 @@ contract ZangNFTtest is DSTest {
         marketplace.decreasePlatformFeePercentage(0);
         assertEq(marketplace.platformFeePercentage(), 0);
 
-        hevm.expectRevert("Platform fee percentage increase must be first requested");
+        hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
         marketplace.applyPlatformFeePercentageIncrease();
 
         // Requesting an increase to 100 (i.e. 1%)
         marketplace.requestPlatformFeePercentageIncrease(100);
 
-        hevm.expectRevert("Platform fee percentage increase is locked");
+        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
         marketplace.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 1 days);
 
-        hevm.expectRevert("Platform fee percentage increase is locked");
+        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
         marketplace.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 7 days);
@@ -908,18 +908,18 @@ contract ZangNFTtest is DSTest {
         marketplace.applyPlatformFeePercentageIncrease();
         assertEq(marketplace.platformFeePercentage(), 100);
 
-        hevm.expectRevert("Platform fee percentage increase must be first requested");
+        hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
         marketplace.applyPlatformFeePercentageIncrease();
 
         // Request a new increase, this time to 200 (i.e. 2%)
         marketplace.requestPlatformFeePercentageIncrease(200);
 
-        hevm.expectRevert("Platform fee percentage increase is locked");
+        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
         marketplace.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 1 days);
 
-        hevm.expectRevert("Platform fee percentage increase is locked");
+        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
         marketplace.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 7 days);
@@ -932,31 +932,31 @@ contract ZangNFTtest is DSTest {
     function test_set_platform_fee_percentage_fuzz(uint16 newFeePercentage) public {
         uint16 currentFee = marketplace.platformFeePercentage();
         if(newFeePercentage == currentFee) {
-            hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+            hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
             marketplace.decreasePlatformFeePercentage(newFeePercentage);
 
-            hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+            hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
             marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
         } else if(newFeePercentage > currentFee) {
-            hevm.expectRevert("_lowerFeePercentage must be lower than the current platform fee percentage");
+            hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
             marketplace.decreasePlatformFeePercentage(newFeePercentage);
 
-            hevm.expectRevert("Platform fee percentage increase must be first requested");
+            hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
             marketplace.applyPlatformFeePercentageIncrease();
 
             marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
             assertEq(marketplace.newPlatformFeePercentage(), newFeePercentage);
-            hevm.expectRevert("Platform fee percentage increase is locked");
+            hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
             marketplace.applyPlatformFeePercentageIncrease();
 
             hevm.warp(block.timestamp + 7 days);
             marketplace.applyPlatformFeePercentageIncrease();
             assertEq(marketplace.platformFeePercentage(), newFeePercentage);
 
-            hevm.expectRevert("Platform fee percentage increase must be first requested");
+            hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
             marketplace.applyPlatformFeePercentageIncrease();
         } else {
-            hevm.expectRevert("_higherFeePercentage must be higher than the current platform fee percentage");
+            hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
             marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
 
             marketplace.decreasePlatformFeePercentage(newFeePercentage);

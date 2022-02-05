@@ -60,29 +60,29 @@ contract Marketplace is Pausable, Ownable {
     }
 
     function decreasePlatformFeePercentage(uint16 _lowerFeePercentage) public onlyOwner {
-        require(_lowerFeePercentage < platformFeePercentage, "_lowerFeePercentage must be lower than the current platform fee percentage");
+        require(_lowerFeePercentage < platformFeePercentage, "Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
         platformFeePercentage = _lowerFeePercentage;
     }
 
     function requestPlatformFeePercentageIncrease(uint16 _higherFeePercentage) public onlyOwner {
-        require(_higherFeePercentage > platformFeePercentage, "_higherFeePercentage must be higher than the current platform fee percentage");
+        require(_higherFeePercentage > platformFeePercentage, "Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
         lock = block.timestamp + PLATFORM_FEE_TIMELOCK;
         newPlatformFeePercentage = _higherFeePercentage;
     }
 
     function applyPlatformFeePercentageIncrease() public onlyOwner {
-        require(lock != 0, "Platform fee percentage increase must be first requested");
-        require(block.timestamp >= lock, "Platform fee percentage increase is locked");
+        require(lock != 0, "Marketplace: platform fee percentage increase must be first requested");
+        require(block.timestamp >= lock, "Marketplace: platform fee percentage increase is locked");
         lock = 0;
         platformFeePercentage = newPlatformFeePercentage;
     }
 
     function listToken(uint256 _tokenId, uint256 _price, uint256 _amount) external whenNotPaused {
-        require(zangNFTAddress.exists(_tokenId), "Token does not exist");
-        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
-        require(_amount > 0, "Amount must be greater than 0"); // Opt.
-        require(zangNFTAddress.isApprovedForAll(msg.sender, address(this)), "Marketplace contract is not approved");
-        require(_price > 0, "Price must be greater than 0");
+        require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist");
+        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Marketplace: not enough tokens to list"); // Opt.
+        require(_amount > 0, "Marketplace: amount must be greater than 0"); // Opt.
+        require(zangNFTAddress.isApprovedForAll(msg.sender, address(this)), "Marketplace: Marketplace contract is not approved");
+        require(_price > 0, "Marketplace: price must be greater than 0");
 
         uint256 listingId = listingCount[_tokenId];
         listings[_tokenId][listingId] = Listing(_price, msg.sender, _amount);
@@ -91,45 +91,45 @@ contract Marketplace is Pausable, Ownable {
     }
 
     function editListingAmount(uint256 _tokenId, uint256 _listingId, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
-        require(zangNFTAddress.exists(_tokenId), "Token does not exist");
-        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
-        require(_amount > 0, "Amount must be greater than 0"); // Opt.
-        require(listings[_tokenId][_listingId].seller != address(0), "Listing does not exist"); // Opt.
-        require(listings[_tokenId][_listingId].seller == msg.sender, "Only seller can edit listing");
-        require(listings[_tokenId][_listingId].amount == _expectedAmount, "Expected amount does not match");
+        require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist");
+        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Marketplace: not enough tokens to list"); // Opt.
+        require(_amount > 0, "Marketplace: amount must be greater than 0"); // Opt.
+        require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: listing does not exist"); // Opt.
+        require(listings[_tokenId][_listingId].seller == msg.sender, "Marketplace: only seller can edit listing");
+        require(listings[_tokenId][_listingId].amount == _expectedAmount, "Marketplace: expected amount does not match");
 
         listings[_tokenId][_listingId].amount = _amount;
         emit TokenListed(_tokenId, msg.sender, _amount, listings[_tokenId][_listingId].price);
     }
     
     function editListing(uint256 _tokenId, uint256 _listingId, uint256 _price, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
-        require(zangNFTAddress.exists(_tokenId), "Token does not exist");
-        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Not enough tokens to list"); // Opt.
-        require(_amount > 0, "Amount must be greater than 0"); // Opt.
-        //require(zangNFTAddress.isApprovedForAll(msg.sender, address(this)), "Marketplace contract is not approved");
-        require(_price > 0, "Price must be greater than 0");
-        require(listings[_tokenId][_listingId].seller != address(0), "Listing does not exist"); // Opt.
-        require(listings[_tokenId][_listingId].seller == msg.sender, "Only seller can edit listing");
-        require(listings[_tokenId][_listingId].amount == _expectedAmount, "Expected amount does not match");
+        require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist");
+        require(_amount <= zangNFTAddress.balanceOf(msg.sender, _tokenId), "Marketplace: not enough tokens to list"); // Opt.
+        require(_amount > 0, "Marketplace: amount must be greater than 0"); // Opt.
+        //require(zangNFTAddress.isApprovedForAll(msg.sender, address(this)), "Marketplace: Marketplace contract is not approved");
+        require(_price > 0, "Marketplace: price must be greater than 0");
+        require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: listing does not exist"); // Opt.
+        require(listings[_tokenId][_listingId].seller == msg.sender, "Marketplace: only seller can edit listing");
+        require(listings[_tokenId][_listingId].amount == _expectedAmount, "Marketplace: expected amount does not match");
 
         listings[_tokenId][_listingId] = Listing(_price, msg.sender, _amount);
         emit TokenListed(_tokenId, msg.sender, _amount, _price);
     }
 
     function editListingPrice(uint256 _tokenId, uint256 _listingId, uint256 _price) external whenNotPaused {
-        require(zangNFTAddress.exists(_tokenId), "Token does not exist");
-        require(_price > 0, "Price must be greater than 0");
-        require(listings[_tokenId][_listingId].seller != address(0), "Listing does not exist"); // Opt.
-        require(listings[_tokenId][_listingId].seller == msg.sender, "Only seller can edit listing");
+        require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist");
+        require(_price > 0, "Marketplace: price must be greater than 0");
+        require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: listing does not exist"); // Opt.
+        require(listings[_tokenId][_listingId].seller == msg.sender, "Marketplace: only seller can edit listing");
 
         listings[_tokenId][_listingId].price = _price;
         emit TokenListed(_tokenId, msg.sender, listings[_tokenId][_listingId].amount, _price);
     }
 
     function delistToken(uint256 _tokenId, uint256 _listingId) external whenNotPaused {
-        require(_listingId < listingCount[_tokenId], "Listing ID out of bounds"); // Opt.
-        require(listings[_tokenId][_listingId].seller != address(0), "Cannot interact with a delisted listing"); // Opt.
-        require(listings[_tokenId][_listingId].seller == msg.sender, "Only the seller can delist");
+        require(_listingId < listingCount[_tokenId], "Marketplace: listing ID out of bounds"); // Opt.
+        require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: cannot interact with a delisted listing"); // Opt.
+        require(listings[_tokenId][_listingId].seller == msg.sender, "Marketplace: only the seller can delist");
 
         // We don't check whether the token exists because someone might want to delist a token
         // that has been completely burned
@@ -160,30 +160,30 @@ contract Marketplace is Pausable, Ownable {
         if(creatorFee > 0) {
             sellerEarnings -= creatorFee;
             (sent, ) = payable(creator).call{value: creatorFee}("");
-            require(sent, "Could not send creator fee");
+            require(sent, "Marketplace: could not send creator fee");
         }
 
         (sent, ) = payable(zangCommissionAccount).call{value: platformFee}("");
-        require(sent, "Could not send platform fee");
+        require(sent, "Marketplace: could not send platform fee");
 
         (sent, ) = payable(seller).call{value: sellerEarnings}("");
-        require(sent, "Could not send seller earnings");
+        require(sent, "Marketplace: could not send seller earnings");
     }
 
     function buyToken(uint256 _tokenId, uint256 _listingId, uint256 _amount) external payable whenNotPaused {
-        require(_listingId < listingCount[_tokenId], "Listing index out of bounds");
-        require(listings[_tokenId][_listingId].seller != address(0), "Cannot interact with a delisted listing");
-        require(listings[_tokenId][_listingId].seller != msg.sender, "Cannot buy from yourself");
-        require(_amount <= listings[_tokenId][_listingId].amount, "Not enough tokens to buy");
+        require(_listingId < listingCount[_tokenId], "Marketplace: listing index out of bounds");
+        require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: cannot interact with a delisted listing");
+        require(listings[_tokenId][_listingId].seller != msg.sender, "Marketplace: cannot buy from yourself");
+        require(_amount <= listings[_tokenId][_listingId].amount, "Marketplace: not enough tokens to buy");
         address seller = listings[_tokenId][_listingId].seller;
         // If all copies have been burned, the token is deleted
-        require(zangNFTAddress.exists(_tokenId), "Token does not exist anymore"); // Opt.
+        require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist anymore"); // Opt.
         // If seller transfers tokens "for free", their listing is still active! If they get them back they can still be bought
-        require(_amount <= zangNFTAddress.balanceOf(seller, _tokenId), "Seller does not have enough tokens anymore");
+        require(_amount <= zangNFTAddress.balanceOf(seller, _tokenId), "Marketplace: seller does not have enough tokens anymore");
 
         uint256 price = listings[_tokenId][_listingId].price;
         // check if listing is satisfied
-        require(msg.value == price * _amount, "Price does not match");
+        require(msg.value == price * _amount, "Marketplace: price does not match");
 
         // Update listing
         listings[_tokenId][_listingId].amount -= _amount;
