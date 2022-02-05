@@ -54,7 +54,7 @@ contract StringUtilsTest is DSTest {
         return bytes(s)[0];
     }
 
-    // 2: ì, ò, ç, §, è, ù, Ǝ, Ɵ, ©, ¼, Ã, Ç, ö, ÷
+    // 2: ì, ò, ç, §, è, ù, Ǝ, Ɵ, ©, ¼, Ã, Ç, ö, ÷,
     function test_utf_length_with_two_bytes_chars() public {
         uint n = StringUtils.utfLength(first_byte(unicode"ì"));
         assertEq(n, 2);
@@ -99,7 +99,7 @@ contract StringUtilsTest is DSTest {
         assertEq(n, 2);
     }
 
-    // 3: ⺷, ㋕, 㑥, 㪶, 東, 方, ㄲ, ㅉ
+    // 3: ⺷, ㋕, 㑥, 㪶, 東, 方, ㄲ, ㅉ,
     function test_utf_length_with_three_bytes_chars() public {
         uint n = StringUtils.utfLength(first_byte(unicode"⺷"));
         assertEq(n, 3);
@@ -126,7 +126,7 @@ contract StringUtilsTest is DSTest {
         assertEq(n, 3);
     }
 
-    // 4: 𒀁, 𓃘, 𓇼, 𝅘𝅥𝅰, 🁲, 🌔, 🙄, 🢅, 🨀
+    // 4: 𒀁, 𓃘, 𓇼, 𝅘𝅥𝅰, 🁲, 🌔, 🙄, 🢅, 🨀,
     function test_utf_length_with_four_bytes_chars() public {
         uint n = StringUtils.utfLength(first_byte(unicode"𒀁"));
         assertEq(n, 4);
