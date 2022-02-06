@@ -901,7 +901,7 @@ contract ZangNFTtest is DSTest {
         uint96 currentRoyaltyValue = 1000;
         uint id = zangNFT.mint("text", "title", "description", amount, currentRoyaltyValue, address(0x1), "");
 
-       if(_lowerValue > 10000) {
+        if(_lowerValue > 10000) {
             hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
             zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
         } else if(_lowerValue > currentRoyaltyValue) {
@@ -911,6 +911,11 @@ contract ZangNFTtest is DSTest {
             zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
             assertEq(zangNFT.royaltyNumerator(id), _lowerValue);
         }
+    }
+
+    function test_decrease_royalty_value_nonexistent_token() public {
+        hevm.expectRevert("ZangNFT: decreasing royalty numerator for nonexistent token");
+        zangNFT.decreaseRoyaltyNumerator(0, 100);
     }
 
     function test_set_platform_fee_percentage() public {
