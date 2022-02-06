@@ -263,6 +263,7 @@ contract StringUtilsTest is DSTest {
                             // If we're here--------^
                             // We should check that the next character is equal
                             assertEq(t[i + 1], charToInsert);
+                            i++;
                         } else {
                             // We're in a situation like "insert C before B in AB"
                             // The string becomes "ACB"
