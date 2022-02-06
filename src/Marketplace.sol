@@ -9,10 +9,11 @@ interface IZangNFT {
     function balanceOf(address account, uint256 id) external view returns (uint256);
     function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address receiver, uint256 royaltyAmount);
     function isApprovedForAll(address account, address operator) external view returns (bool);
+    function zangCommissionAccount() external view returns (address);
+    function platformFeePercentage() external view returns (uint16);
 }
 
 contract Marketplace is Pausable, Ownable {
-
     event TokenListed(
         uint256 indexed _tokenId,
         address indexed _seller,
@@ -37,12 +38,6 @@ contract Marketplace is Pausable, Ownable {
     );
 
     IZangNFT public immutable zangNFTAddress;
-    uint16 public platformFeePercentage = 500; //two decimals, so 500 = 5.00%
-    address public zangCommissionAccount;
-
-    uint256 public lock = 0;
-    uint16 public newPlatformFeePercentage = 0;
-    uint256 public constant PLATFORM_FEE_TIMELOCK = 7 days;
 
     struct Listing {
         uint256 price;
@@ -54,31 +49,8 @@ contract Marketplace is Pausable, Ownable {
     mapping(uint256 => mapping(uint256 => Listing)) public listings;
     mapping(uint256 => uint256) public listingCount;
 
-    constructor(IZangNFT _zangNFTAddress, address _zangCommissionAccount) {
+    constructor(IZangNFT _zangNFTAddress) {
         zangNFTAddress = _zangNFTAddress;
-        zangCommissionAccount = _zangCommissionAccount;
-    }
-
-    function setZangCommissionAccount(address _zangCommissionAccount) public onlyOwner {
-        zangCommissionAccount = _zangCommissionAccount;
-    }
-
-    function decreasePlatformFeePercentage(uint16 _lowerFeePercentage) public onlyOwner {
-        require(_lowerFeePercentage < platformFeePercentage, "Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
-        platformFeePercentage = _lowerFeePercentage;
-    }
-
-    function requestPlatformFeePercentageIncrease(uint16 _higherFeePercentage) public onlyOwner {
-        require(_higherFeePercentage > platformFeePercentage, "Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
-        lock = block.timestamp + PLATFORM_FEE_TIMELOCK;
-        newPlatformFeePercentage = _higherFeePercentage;
-    }
-
-    function applyPlatformFeePercentageIncrease() public onlyOwner {
-        require(lock != 0, "Marketplace: platform fee percentage increase must be first requested");
-        require(block.timestamp >= lock, "Marketplace: platform fee percentage increase is locked");
-        lock = 0;
-        platformFeePercentage = newPlatformFeePercentage;
     }
 
     function pause() external onlyOwner {
@@ -164,7 +136,7 @@ contract Marketplace is Pausable, Ownable {
 
     function _handleFunds(uint256 _tokenId, address seller) private {
         uint256 value = msg.value;
-        uint256 platformFee = (value * platformFeePercentage) / 10000;
+        uint256 platformFee = (value * zangNFTAddress.platformFeePercentage()) / 10000;
 
         uint256 remainder = value - platformFee;
 
@@ -179,7 +151,7 @@ contract Marketplace is Pausable, Ownable {
             require(sent, "Marketplace: could not send creator fee");
         }
 
-        (sent, ) = payable(zangCommissionAccount).call{value: platformFee}("");
+        (sent, ) = payable(zangNFTAddress.zangCommissionAccount()).call{value: platformFee}("");
         require(sent, "Marketplace: could not send platform fee");
 
         (sent, ) = payable(seller).call{value: sellerEarnings}("");

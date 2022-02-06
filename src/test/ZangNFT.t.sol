@@ -27,9 +27,9 @@ contract ZangNFTtest is DSTest {
     }
 
     function setUp() public {
-        zangNFT = new ZangNFT("ZangNFT", "ZNG");
+        zangNFT = new ZangNFT("ZangNFT", "ZNG", zangCommissionAccount);
         IZangNFT izang = IZangNFT(address(zangNFT));
-        marketplace = new Marketplace(izang, zangCommissionAccount);
+        marketplace = new Marketplace(izang);
     }
     function test_mint(string memory preTextURI, string memory title, string memory description, uint amount) public {
         address user = address(69);
@@ -828,15 +828,15 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_change_zang_commission_account_as_owner() public {
-        marketplace.setZangCommissionAccount(address(0x1));
-        assertEq(marketplace.zangCommissionAccount(), address(0x1));
+        zangNFT.setZangCommissionAccount(address(0x1));
+        assertEq(zangNFT.zangCommissionAccount(), address(0x1));
     }
 
     function test_change_zang_commission_account_as_not_owner() public {
         address user = address(69);
         hevm.startPrank(user);
         hevm.expectRevert("Ownable: caller is not the owner");
-        marketplace.setZangCommissionAccount(address(0x1));
+        zangNFT.setZangCommissionAccount(address(0x1));
         hevm.stopPrank();
     }
 
@@ -861,7 +861,7 @@ contract ZangNFTtest is DSTest {
         // 10% royaltes to 0x1: 10% of 43 wei = 4.3 wei -> 4 wei
         // remaining: 39 wei instead of 38.45 wei
         
-        assertEq(address(marketplace.zangCommissionAccount()).balance, 2 wei);
+        assertEq(address(zangNFT.zangCommissionAccount()).balance, 2 wei);
         assertEq(address(0x1).balance, 4 wei);
         assertEq(address(user).balance, 39 wei);
     }
@@ -919,94 +919,94 @@ contract ZangNFTtest is DSTest {
     }
 
     function test_set_platform_fee_percentage() public {
-        uint16 currentFee = marketplace.platformFeePercentage();
+        uint16 currentFee = zangNFT.platformFeePercentage();
         assertEq(currentFee, 500);
 
-        hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
-        marketplace.decreasePlatformFeePercentage(500);
+        hevm.expectRevert("ZangNFTCommissions: _lowerFeePercentage must be lower than the current platform fee percentage");
+        zangNFT.decreasePlatformFeePercentage(500);
 
-        hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
-        marketplace.requestPlatformFeePercentageIncrease(500);
+        hevm.expectRevert("ZangNFTCommissions: _higherFeePercentage must be higher than the current platform fee percentage");
+        zangNFT.requestPlatformFeePercentageIncrease(500);
 
-        marketplace.decreasePlatformFeePercentage(100);
-        assertEq(marketplace.platformFeePercentage(), 100);
+        zangNFT.decreasePlatformFeePercentage(100);
+        assertEq(zangNFT.platformFeePercentage(), 100);
 
-        marketplace.decreasePlatformFeePercentage(0);
-        assertEq(marketplace.platformFeePercentage(), 0);
+        zangNFT.decreasePlatformFeePercentage(0);
+        assertEq(zangNFT.platformFeePercentage(), 0);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase must be first requested");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         // Requesting an increase to 100 (i.e. 1%)
-        marketplace.requestPlatformFeePercentageIncrease(100);
+        zangNFT.requestPlatformFeePercentageIncrease(100);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase is locked");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 1 days);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase is locked");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 7 days);
 
         // Increase finally succeeds
-        marketplace.applyPlatformFeePercentageIncrease();
-        assertEq(marketplace.platformFeePercentage(), 100);
+        zangNFT.applyPlatformFeePercentageIncrease();
+        assertEq(zangNFT.platformFeePercentage(), 100);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase must be first requested");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         // Request a new increase, this time to 200 (i.e. 2%)
-        marketplace.requestPlatformFeePercentageIncrease(200);
+        zangNFT.requestPlatformFeePercentageIncrease(200);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase is locked");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 1 days);
 
-        hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
-        marketplace.applyPlatformFeePercentageIncrease();
+        hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase is locked");
+        zangNFT.applyPlatformFeePercentageIncrease();
 
         hevm.warp(block.timestamp + 7 days);
 
         // Increase finally succeeds
-        marketplace.applyPlatformFeePercentageIncrease();
-        assertEq(marketplace.platformFeePercentage(), 200);
+        zangNFT.applyPlatformFeePercentageIncrease();
+        assertEq(zangNFT.platformFeePercentage(), 200);
     }
 
     function test_set_platform_fee_percentage_fuzz(uint16 newFeePercentage) public {
-        uint16 currentFee = marketplace.platformFeePercentage();
+        uint16 currentFee = zangNFT.platformFeePercentage();
         if(newFeePercentage == currentFee) {
-            hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
-            marketplace.decreasePlatformFeePercentage(newFeePercentage);
+            hevm.expectRevert("ZangNFTCommissions: _lowerFeePercentage must be lower than the current platform fee percentage");
+            zangNFT.decreasePlatformFeePercentage(newFeePercentage);
 
-            hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
-            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
+            hevm.expectRevert("ZangNFTCommissions: _higherFeePercentage must be higher than the current platform fee percentage");
+            zangNFT.requestPlatformFeePercentageIncrease(newFeePercentage);
         } else if(newFeePercentage > currentFee) {
-            hevm.expectRevert("Marketplace: _lowerFeePercentage must be lower than the current platform fee percentage");
-            marketplace.decreasePlatformFeePercentage(newFeePercentage);
+            hevm.expectRevert("ZangNFTCommissions: _lowerFeePercentage must be lower than the current platform fee percentage");
+            zangNFT.decreasePlatformFeePercentage(newFeePercentage);
 
-            hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
-            marketplace.applyPlatformFeePercentageIncrease();
+            hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase must be first requested");
+            zangNFT.applyPlatformFeePercentageIncrease();
 
-            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
-            assertEq(marketplace.newPlatformFeePercentage(), newFeePercentage);
-            hevm.expectRevert("Marketplace: platform fee percentage increase is locked");
-            marketplace.applyPlatformFeePercentageIncrease();
+            zangNFT.requestPlatformFeePercentageIncrease(newFeePercentage);
+            assertEq(zangNFT.newPlatformFeePercentage(), newFeePercentage);
+            hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase is locked");
+            zangNFT.applyPlatformFeePercentageIncrease();
 
             hevm.warp(block.timestamp + 7 days);
-            marketplace.applyPlatformFeePercentageIncrease();
-            assertEq(marketplace.platformFeePercentage(), newFeePercentage);
+            zangNFT.applyPlatformFeePercentageIncrease();
+            assertEq(zangNFT.platformFeePercentage(), newFeePercentage);
 
-            hevm.expectRevert("Marketplace: platform fee percentage increase must be first requested");
-            marketplace.applyPlatformFeePercentageIncrease();
+            hevm.expectRevert("ZangNFTCommissions: platform fee percentage increase must be first requested");
+            zangNFT.applyPlatformFeePercentageIncrease();
         } else {
-            hevm.expectRevert("Marketplace: _higherFeePercentage must be higher than the current platform fee percentage");
-            marketplace.requestPlatformFeePercentageIncrease(newFeePercentage);
+            hevm.expectRevert("ZangNFTCommissions: _higherFeePercentage must be higher than the current platform fee percentage");
+            zangNFT.requestPlatformFeePercentageIncrease(newFeePercentage);
 
-            marketplace.decreasePlatformFeePercentage(newFeePercentage);
-            assertEq(marketplace.platformFeePercentage(), newFeePercentage);
+            zangNFT.decreasePlatformFeePercentage(newFeePercentage);
+            assertEq(zangNFT.platformFeePercentage(), newFeePercentage);
         }
     }
 

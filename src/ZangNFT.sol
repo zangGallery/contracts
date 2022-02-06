@@ -8,10 +8,12 @@ import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "./ERC2981.sol";
 import {StringUtils} from "./StringUtils.sol";
+import "./ZangNFTCommissions.sol";
 
 contract ZangNFT is
     ERC1155Supply,
-    ERC2981
+    ERC2981,
+    ZangNFTCommissions
 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -27,7 +29,7 @@ contract ZangNFT is
     string public name;
     string public symbol;
 
-    constructor(string memory name_, string memory symbol_) ERC1155("") {
+    constructor(string memory name_, string memory symbol_, address _zangCommissionAccount) ERC1155("") ZangNFTCommissions(_zangCommissionAccount) {
         name = name_;
         symbol = symbol_;
     }
