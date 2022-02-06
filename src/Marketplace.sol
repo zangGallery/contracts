@@ -77,6 +77,14 @@ contract Marketplace is Pausable, Ownable {
         platformFeePercentage = newPlatformFeePercentage;
     }
 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     function listToken(uint256 _tokenId, uint256 _price, uint256 _amount) external whenNotPaused {
         require(zangNFTAddress.exists(_tokenId), "Marketplace: token does not exist");
         require(zangNFTAddress.isApprovedForAll(msg.sender, address(this)), "Marketplace: Marketplace contract is not approved");

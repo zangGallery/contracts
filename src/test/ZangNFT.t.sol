@@ -1004,4 +1004,59 @@ contract ZangNFTtest is DSTest {
             assertEq(marketplace.platformFeePercentage(), newFeePercentage);
         }
     }
+
+    function test_only_owner_can_pause() public {
+        marketplace.pause();
+        marketplace.unpause();
+
+        address user = address(69);
+
+        hevm.startPrank(user);
+        hevm.expectRevert("Ownable: caller is not the owner");
+        marketplace.pause();
+        hevm.expectRevert("Ownable: caller is not the owner");
+        marketplace.unpause();
+        hevm.stopPrank();
+
+        user = address(0);
+
+        hevm.startPrank(user);
+        hevm.expectRevert("Ownable: caller is not the owner");
+        marketplace.pause();
+        hevm.expectRevert("Ownable: caller is not the owner");
+        marketplace.unpause();
+        hevm.stopPrank();
+    }
+
+    function test_pause_and_unpause() public {
+        marketplace.pause();
+        hevm.expectRevert("Pausable: paused");
+        marketplace.listToken(0,0,0);
+        hevm.expectRevert("Pausable: paused");
+        marketplace.editListingAmount(0,0,0,0);
+        hevm.expectRevert("Pausable: paused");
+        marketplace.editListing(0,0,0,0,0);
+        hevm.expectRevert("Pausable: paused");
+        marketplace.editListingPrice(0,0,0);
+        hevm.expectRevert("Pausable: paused");
+        marketplace.delistToken(0,0);
+        hevm.expectRevert("Pausable: paused");
+        marketplace.buyToken(0,0,0);
+
+        marketplace.unpause();
+
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.listToken(0,0,0);
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.editListingAmount(0,0,0,0);
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.editListing(0,0,0,0,0);
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.editListingPrice(0,0,0);
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.delistToken(0,0);
+        hevm.expectRevert("Marketplace: token does not exist");
+        marketplace.buyToken(0,0,0);
+    }
+
 }
