@@ -27,10 +27,44 @@ contract ZangNFTtest is DSTest {
     }
 
     function setUp() public {
-        zangNFT = new ZangNFT("ZangNFT", "ZNG", zangCommissionAccount);
+        zangNFT = new ZangNFT(
+            "ZangNFT",
+            "ZNG",
+            "zang description",
+            "zang image uri",
+            "zang external link",
+            zangCommissionAccount);
         IZangNFT izang = IZangNFT(address(zangNFT));
         marketplace = new Marketplace(izang);
     }
+
+    function test_metadata() public {
+        string memory expectedName = "ZangNFT";
+        assertEq(zangNFT.name(), expectedName);
+
+        string memory expectedSymbol = "ZNG";
+        assertEq(zangNFT.symbol(), expectedSymbol);
+
+        string memory expectedDescription = "zang description";
+        assertEq(zangNFT.description(), expectedDescription);
+
+        string memory expectedImageUri = "zang image uri";
+        assertEq(zangNFT.imageURI(), expectedImageUri);
+
+        string memory expectedExternalLink = "zang external link";
+        assertEq(zangNFT.externalLink(), expectedExternalLink);
+
+        assertEq(zangNFT.zangCommissionAccount(), zangCommissionAccount);
+
+        // Original string: '{"name": "ZangNFT", "description": "zang description", "image": "zang image uri", "external_link": "zang external link", "seller_fee_basis_points" : 500, "fee_recipient": "0x000000000000000000000000000000000000033d"}'
+        // Base64 encoded string: eyJuYW1lIjogIlphbmdORlQiLCAiZGVzY3JpcHRpb24iOiAiemFuZyBkZXNjcmlwdGlvbiIsICJpbWFnZSI6ICJ6YW5nIGltYWdlIHVyaSIsICJleHRlcm5hbF9saW5rIjogInphbmcgZXh0ZXJuYWwgbGluayIsICJzZWxsZXJfZmVlX2Jhc2lzX3BvaW50cyIgOiA1MDAsICJmZWVfcmVjaXBpZW50IjogIjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDMzZCJ9
+
+        string memory expectedContractURI = "data:application/json;base64,eyJuYW1lIjogIlphbmdORlQiLCAiZGVzY3JpcHRpb24iOiAiemFuZyBkZXNjcmlwdGlvbiIsICJpbWFnZSI6ICJ6YW5nIGltYWdlIHVyaSIsICJleHRlcm5hbF9saW5rIjogInphbmcgZXh0ZXJuYWwgbGluayIsICJzZWxsZXJfZmVlX2Jhc2lzX3BvaW50cyIgOiA1MDAsICJmZWVfcmVjaXBpZW50IjogIjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDMzZCJ9";
+
+        assertEq(zangNFT.contractURI(), expectedContractURI);
+
+    }
+
     function test_mint(string memory preTextURI, string memory title, string memory description, uint amount) public {
         address user = address(69);
         uint96 royaltyNumerator = 1000;

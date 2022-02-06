@@ -6,6 +6,7 @@ import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
+import "../node_modules/@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC2981.sol";
 import {StringUtils} from "./StringUtils.sol";
 import "./ZangNFTCommissions.sol";
@@ -28,10 +29,16 @@ contract ZangNFT is
 
     string public name;
     string public symbol;
+    string public description;
+    string public imageURI;
+    string public externalLink;
 
-    constructor(string memory name_, string memory symbol_, address _zangCommissionAccount) ERC1155("") ZangNFTCommissions(_zangCommissionAccount) {
-        name = name_;
-        symbol = symbol_;
+    constructor(string memory _name, string memory _symbol, string memory _description, string memory _imageURI, string memory _externalLink, address _zangCommissionAccount) ERC1155("") ZangNFTCommissions(_zangCommissionAccount) {
+        name = _name;
+        symbol = _symbol;
+        description = _description;
+        imageURI = _imageURI;
+        externalLink = _externalLink;
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -42,6 +49,36 @@ contract ZangNFT is
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    function contractURI() public view returns (string memory) {
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{',
+                        '"name": "',
+                        StringUtils.insertBeforeAsciiString(name, '"', '\\'),
+                        '", ',
+                        '"description": ',
+                        '"',
+                        StringUtils.insertBeforeAsciiString(description, '"', '\\'),
+                        '", ',
+                        '"image": "', imageURI, '", '
+                        '"external_link": "', externalLink, '", '
+                        '"seller_fee_basis_points" : ', Strings.toString(platformFeePercentage), ', '
+                        '"fee_recipient": "', Strings.toHexString(uint256(uint160(zangCommissionAccount)), 20), '"'
+                        "}"
+                    )
+                )
+            )
+        );
+
+        string memory output = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
+
+        return output;
     }
 
     function lastTokenId() public view returns (uint256) {
@@ -72,7 +109,7 @@ contract ZangNFT is
                         StringUtils.insertBeforeAsciiString(_descriptions[tokenId], '"', '\\'),
                         '", ',
                         //'"image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '", '
-                        '"textURI" : ',
+                        '"text_uri" : ',
                         '"',
                         textURI(tokenId),
                         '"',
