@@ -36,8 +36,7 @@ library StringUtils {
     function insertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) internal pure returns (bytes memory) {
         // You can't insert something before a prefix byte (you technically could, but it would be really counter-intuitive)
         require(utfLength(target) == 1, "StringUtils: target must be ASCII");
-        // TODO: Evaluate if this should be checked   
-        //require(utfLength(inhsert) == 1, "StringUtils: insert must be ASCII");
+        require(utfLength(insert) == 1, "StringUtils: insert must be ASCII");
 
         for (uint256 i = 0; i < str.length; i++) {
             if (utfLength(str[i]) + i > str.length) {
@@ -49,8 +48,6 @@ library StringUtils {
         uint256 from = 0;
         uint256 to = 0;
         while (from < str.length) {
-            // console.log("Test %s %s", from, uint8(str[from]));
-            // console.log("Index %s, char %s", from, copy);
             bytes1 b = str[from];
             uint8 bLength = utfLength(b);
 

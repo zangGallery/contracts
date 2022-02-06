@@ -220,9 +220,12 @@ contract StringUtilsTest is DSTest {
         assertBytesEq(t, bytes("aaaab"));
 
         s = bytes(unicode"ì"); // C3 AC
-        // TODO: Uncomment when forge is fixed
-        //hevm.expectRevert("StringUtils: target must be ASCII");
-        //t = StringUtils.insertBeforeAscii(s, 0xC3, '_');
+        hevm.expectRevert("StringUtils: target must be ASCII");
+        t = wrapper.wrappedInsertBeforeAscii(s, 0xC3, '_');
+
+        s = bytes(unicode"ì"); // C3 AC
+        hevm.expectRevert("StringUtils: insert must be ASCII");
+        t = wrapper.wrappedInsertBeforeAscii(s, '_', 0xC3);
 
         s = bytes(unicode"ìab");
         t = StringUtils.insertBeforeAscii(s, 'a', '_');
@@ -236,9 +239,11 @@ contract StringUtilsTest is DSTest {
     function test_insert_before_ascii_fuzz(bytes memory s, bytes1 charToFind, bytes1 charToInsert) public {
         if (charToFind >= 0x80) {
             // Prefix character, aka first byte of a multi byte character
-            // TODO: Uncomment when forge is fixed
-            //hevm.expectRevert("StringUtils: target must be ASCII");
-            //StringUtils.insertBeforeAscii(s, charToFind, charToInsert);
+            hevm.expectRevert("StringUtils: target must be ASCII");
+            wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
+        } else if (charToInsert >= 0x80) {
+            hevm.expectRevert("StringUtils: insert must be ASCII");
+            wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
         }
         else {
             bool validUtf = true;
@@ -252,7 +257,19 @@ contract StringUtilsTest is DSTest {
 
                 for (uint256 i = 0; i < t.length; i += StringUtils.utfLength(t[i])) {
                     if (t[i] == charToFind) {
-                        assertEq(t[i-1], charToInsert);
+                        if (charToFind == charToInsert) {
+                            // We're in a situation like "insert B before B in AB"
+                            // The string becomes "ABB"
+                            // If we're here--------^
+                            // We should check that the next character is equal
+                            assertEq(t[i + 1], charToInsert);
+                        } else {
+                            // We're in a situation like "insert C before B in AB"
+                            // The string becomes "ACB"
+                            // If we're here---------^
+                            // We should check that the previous character is equal to C
+                            assertEq(t[i - 1], charToInsert);
+                        }
                     }
                 }
             } else {

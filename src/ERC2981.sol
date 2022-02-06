@@ -104,7 +104,7 @@ abstract contract ERC2981 is IERC2981, ERC165 {
         uint96 feeNumerator
     ) internal virtual {
         require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
-        require(receiver != address(0), "ERC2981: Invalid parameters");
+        require(receiver != address(0), "ERC2981: invalid parameters");
 
         _tokenRoyaltyInfo[tokenId] = RoyaltyInfo(receiver, feeNumerator);
     }
