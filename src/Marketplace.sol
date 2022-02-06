@@ -16,18 +16,22 @@ contract Marketplace is Pausable, Ownable {
     event TokenListed(
         uint256 indexed _tokenId,
         address indexed _seller,
+        uint256 _listingId,
         uint256 amount,
         uint256 _price
     );
 
     event TokenDelisted(
-        uint256 indexed _tokenId
+        uint256 indexed _tokenId,
+        address indexed _seller,
+        uint256 _listingId
     );
 
     event TokenPurchased(
         uint256 indexed _tokenId,
         address indexed _buyer,
         address indexed _seller,
+        uint256 _listingId,
         uint256 _amount,
         uint256 _price
     );
@@ -95,7 +99,7 @@ contract Marketplace is Pausable, Ownable {
         uint256 listingId = listingCount[_tokenId];
         listings[_tokenId][listingId] = Listing(_price, msg.sender, _amount);
         listingCount[_tokenId]++;
-        emit TokenListed(_tokenId, msg.sender, _amount, _price);
+        emit TokenListed(_tokenId, msg.sender, listingId, _amount, _price);
     }
 
     function editListingAmount(uint256 _tokenId, uint256 _listingId, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
@@ -109,7 +113,7 @@ contract Marketplace is Pausable, Ownable {
         require(listings[_tokenId][_listingId].amount == _expectedAmount, "Marketplace: expected amount does not match");
 
         listings[_tokenId][_listingId].amount = _amount;
-        emit TokenListed(_tokenId, msg.sender, _amount, listings[_tokenId][_listingId].price);
+        emit TokenListed(_tokenId, msg.sender, _listingId, _amount, listings[_tokenId][_listingId].price);
     }
     
     function editListing(uint256 _tokenId, uint256 _listingId, uint256 _price, uint256 _amount, uint256 _expectedAmount) external whenNotPaused {
@@ -124,7 +128,7 @@ contract Marketplace is Pausable, Ownable {
         require(listings[_tokenId][_listingId].amount == _expectedAmount, "Marketplace: expected amount does not match");
 
         listings[_tokenId][_listingId] = Listing(_price, msg.sender, _amount);
-        emit TokenListed(_tokenId, msg.sender, _amount, _price);
+        emit TokenListed(_tokenId, msg.sender, _listingId, _amount, _price);
     }
 
     function editListingPrice(uint256 _tokenId, uint256 _listingId, uint256 _price) external whenNotPaused {
@@ -136,7 +140,7 @@ contract Marketplace is Pausable, Ownable {
         //require(listings[_tokenId][_listingId].seller != address(0), "Marketplace: listing does not exist"); // Opt.
 
         listings[_tokenId][_listingId].price = _price;
-        emit TokenListed(_tokenId, msg.sender, listings[_tokenId][_listingId].amount, _price);
+        emit TokenListed(_tokenId, msg.sender, _listingId, listings[_tokenId][_listingId].amount, _price);
     }
 
     function delistToken(uint256 _tokenId, uint256 _listingId) external whenNotPaused {
@@ -155,7 +159,7 @@ contract Marketplace is Pausable, Ownable {
 
     function _delistToken(uint256 _tokenId, uint256 _listingId) private {
         _removeListing(_tokenId, _listingId);
-        emit TokenDelisted(_tokenId);
+        emit TokenDelisted(_tokenId, msg.sender, _listingId);
     }
 
     function _handleFunds(uint256 _tokenId, address seller) private {
@@ -206,7 +210,7 @@ contract Marketplace is Pausable, Ownable {
             _delistToken(_tokenId, _listingId);
         }
 
-        emit TokenPurchased(_tokenId, msg.sender, seller, _amount, price);
+        emit TokenPurchased(_tokenId, msg.sender, seller, _listingId, _amount, price);
 
         _handleFunds(_tokenId, seller);
         zangNFTAddress.safeTransferFrom(seller, msg.sender, _tokenId, _amount, "");
