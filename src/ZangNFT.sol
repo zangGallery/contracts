@@ -128,7 +128,7 @@ contract ZangNFT is
     function authorOf(uint256 _tokenId) public view returns (address) {
         address author = _authors[_tokenId];
         require(
-            author != address(0),
+            exists(_tokenId),
             "ZangNFT: author query for nonexistent token"
         );
         return author;
@@ -143,6 +143,7 @@ contract ZangNFT is
         address royaltyRecipient_,
         bytes memory data_
     ) external returns (uint256) {
+        require(amount_ > 0, "ZangNFT: amount cannot be zero");
         _tokenIds.increment();
 
         uint256 newTokenId = _tokenIds.current();

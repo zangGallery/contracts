@@ -70,6 +70,11 @@ contract ZangNFTtest is DSTest {
         uint96 royaltyNumerator = 1000;
         hevm.startPrank(user);
         uint preBalance = zangNFT.balanceOf(user, 1);
+        if(amount == 0){
+            hevm.expectRevert("ZangNFT: amount cannot be zero");
+            zangNFT.mint(preTextURI, title, description, amount, royaltyNumerator, address(0x1), "");
+            return;
+        }
         uint id = zangNFT.mint(preTextURI, title, description, amount, royaltyNumerator, address(0x1), "");
         uint postBalance = zangNFT.balanceOf(user, id);
         assertEq(preBalance + amount, postBalance);
