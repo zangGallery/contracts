@@ -15,24 +15,45 @@ contract ZangNFTCommissions is Ownable {
         zangCommissionAccount = _zangCommissionAccount;
     }
 
-    function setZangCommissionAccount(address _zangCommissionAccount) public onlyOwner {
+    function setZangCommissionAccount(address _zangCommissionAccount)
+        public
+        onlyOwner
+    {
         zangCommissionAccount = _zangCommissionAccount;
     }
 
-    function decreasePlatformFeePercentage(uint16 _lowerFeePercentage) public onlyOwner {
-        require(_lowerFeePercentage < platformFeePercentage, "ZangNFTCommissions: _lowerFeePercentage must be lower than the current platform fee percentage");
+    function decreasePlatformFeePercentage(uint16 _lowerFeePercentage)
+        public
+        onlyOwner
+    {
+        require(
+            _lowerFeePercentage < platformFeePercentage,
+            "ZangNFTCommissions: _lowerFeePercentage must be lower than the current platform fee percentage"
+        );
         platformFeePercentage = _lowerFeePercentage;
     }
 
-    function requestPlatformFeePercentageIncrease(uint16 _higherFeePercentage) public onlyOwner {
-        require(_higherFeePercentage > platformFeePercentage, "ZangNFTCommissions: _higherFeePercentage must be higher than the current platform fee percentage");
+    function requestPlatformFeePercentageIncrease(uint16 _higherFeePercentage)
+        public
+        onlyOwner
+    {
+        require(
+            _higherFeePercentage > platformFeePercentage,
+            "ZangNFTCommissions: _higherFeePercentage must be higher than the current platform fee percentage"
+        );
         lock = block.timestamp + PLATFORM_FEE_TIMELOCK;
         newPlatformFeePercentage = _higherFeePercentage;
     }
 
     function applyPlatformFeePercentageIncrease() public onlyOwner {
-        require(lock != 0, "ZangNFTCommissions: platform fee percentage increase must be first requested");
-        require(block.timestamp >= lock, "ZangNFTCommissions: platform fee percentage increase is locked");
+        require(
+            lock != 0,
+            "ZangNFTCommissions: platform fee percentage increase must be first requested"
+        );
+        require(
+            block.timestamp >= lock,
+            "ZangNFTCommissions: platform fee percentage increase is locked"
+        );
         lock = 0;
         platformFeePercentage = newPlatformFeePercentage;
     }

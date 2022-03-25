@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "../node_modules/@openzeppelin/contracts/utils/math/Math.sol";
+
 // import "hardhat/console.sol";
 
 /// [MIT License]
@@ -9,20 +10,24 @@ library StringUtils {
     function utfLength(bytes1 b) internal pure returns (uint8) {
         if (b < 0x80) {
             return 1;
-        } else if(b < 0xE0) {
+        } else if (b < 0xE0) {
             return 2;
-        } else if(b < 0xF0) {
+        } else if (b < 0xF0) {
             return 3;
-        } else if(b < 0xF8) {
+        } else if (b < 0xF8) {
             return 4;
-        } else if(b < 0xFC) {
+        } else if (b < 0xFC) {
             return 5;
         } else {
             return 6;
         }
     }
 
-    function firstN(bytes memory arr, uint256 n) internal pure returns (bytes memory) {
+    function firstN(bytes memory arr, uint256 n)
+        internal
+        pure
+        returns (bytes memory)
+    {
         uint256 length = Math.min(n, arr.length);
         bytes memory newArray = new bytes(length);
         for (uint256 i = 0; i < length; i++) {
@@ -32,8 +37,12 @@ library StringUtils {
         return newArray;
     }
 
-    function insertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) internal pure returns (bytes memory) {
-        // You can't insert something before a prefix byte (you technically could, but it would be really counter-intuitive)
+    function insertBeforeAscii(
+        bytes memory str,
+        bytes1 target,
+        bytes1 insert
+    ) internal pure returns (bytes memory) {
+        // You can't insert something before a prefix byte
         require(utfLength(target) == 1, "StringUtils: target must be ASCII");
         require(utfLength(insert) == 1, "StringUtils: insert must be ASCII");
 
@@ -67,7 +76,11 @@ library StringUtils {
         return firstN(newString, to);
     }
 
-    function insertBeforeAsciiString(string memory str, bytes1 target, bytes1 insert) internal pure returns (string memory) {
+    function insertBeforeAsciiString(
+        string memory str,
+        bytes1 target,
+        bytes1 insert
+    ) internal pure returns (string memory) {
         return string(insertBeforeAscii(bytes(str), target, insert));
     }
 }

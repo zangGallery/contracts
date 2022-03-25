@@ -33,8 +33,16 @@ abstract contract ERC2981 is IERC2981, ERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, ERC165)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
@@ -53,7 +61,8 @@ abstract contract ERC2981 is IERC2981, ERC165 {
             royalty = _defaultRoyaltyInfo;
         }
 
-        uint256 royaltyAmount = (_salePrice * royalty.royaltyFraction) / _feeDenominator();
+        uint256 royaltyAmount = (_salePrice * royalty.royaltyFraction) /
+            _feeDenominator();
 
         return (royalty.receiver, royaltyAmount);
     }
@@ -75,8 +84,14 @@ abstract contract ERC2981 is IERC2981, ERC165 {
      * - `receiver` cannot be the zero address.
      * - `feeNumerator` cannot be greater than the fee denominator.
      */
-    function _setDefaultRoyalty(address receiver, uint96 feeNumerator) internal virtual {
-        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
+    function _setDefaultRoyalty(address receiver, uint96 feeNumerator)
+        internal
+        virtual
+    {
+        require(
+            feeNumerator <= _feeDenominator(),
+            "ERC2981: royalty fee will exceed salePrice"
+        );
         require(receiver != address(0), "ERC2981: invalid receiver");
 
         _defaultRoyaltyInfo = RoyaltyInfo(receiver, feeNumerator);
@@ -103,21 +118,34 @@ abstract contract ERC2981 is IERC2981, ERC165 {
         address receiver,
         uint96 feeNumerator
     ) internal virtual {
-        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
+        require(
+            feeNumerator <= _feeDenominator(),
+            "ERC2981: royalty fee will exceed salePrice"
+        );
         require(receiver != address(0), "ERC2981: invalid parameters");
 
         _tokenRoyaltyInfo[tokenId] = RoyaltyInfo(receiver, feeNumerator);
     }
 
-    function _royaltyNumerator(uint256 _tokenId) internal view returns (uint96) {
+    function _royaltyNumerator(uint256 _tokenId)
+        internal
+        view
+        returns (uint96)
+    {
         return _tokenRoyaltyInfo[_tokenId].royaltyFraction;
-    } 
+    }
 
     /**
      * @dev Decreases the royalty fraction for a specific token id
      */
-    function _decreaseRoyaltyNumerator(uint256 _tokenId, uint96 _lowerFeeNumerator) internal {
-        require(_tokenRoyaltyInfo[_tokenId].royaltyFraction > _lowerFeeNumerator, "ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
+    function _decreaseRoyaltyNumerator(
+        uint256 _tokenId,
+        uint96 _lowerFeeNumerator
+    ) internal {
+        require(
+            _tokenRoyaltyInfo[_tokenId].royaltyFraction > _lowerFeeNumerator,
+            "ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction"
+        );
 
         _tokenRoyaltyInfo[_tokenId].royaltyFraction = _lowerFeeNumerator;
     }

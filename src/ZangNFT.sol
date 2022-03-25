@@ -11,11 +11,7 @@ import "./ERC2981.sol";
 import {StringUtils} from "./StringUtils.sol";
 import "./ZangNFTCommissions.sol";
 
-contract ZangNFT is
-    ERC1155Supply,
-    ERC2981,
-    ZangNFTCommissions
-{
+contract ZangNFT is ERC1155Supply, ERC2981, ZangNFTCommissions {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -33,7 +29,14 @@ contract ZangNFT is
     string public imageURI;
     string public externalLink;
 
-    constructor(string memory _name, string memory _symbol, string memory _description, string memory _imageURI, string memory _externalLink, address _zangCommissionAccount) ERC1155("") ZangNFTCommissions(_zangCommissionAccount) {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        string memory _description,
+        string memory _imageURI,
+        string memory _externalLink,
+        address _zangCommissionAccount
+    ) ERC1155("") ZangNFTCommissions(_zangCommissionAccount) {
         name = _name;
         symbol = _symbol;
         description = _description;
@@ -56,18 +59,33 @@ contract ZangNFT is
             bytes(
                 string(
                     abi.encodePacked(
-                        '{',
+                        "{",
                         '"name": "',
-                        StringUtils.insertBeforeAsciiString(name, '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(name, '"', "\\"),
                         '", ',
                         '"description": ',
                         '"',
-                        StringUtils.insertBeforeAsciiString(description, '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(
+                            description,
+                            '"',
+                            "\\"
+                        ),
                         '", ',
-                        '"image": "', imageURI, '", '
-                        '"external_link": "', externalLink, '", '
-                        '"seller_fee_basis_points" : ', Strings.toString(platformFeePercentage), ', '
-                        '"fee_recipient": "', Strings.toHexString(uint256(uint160(zangCommissionAccount)), 20), '"'
+                        '"image": "',
+                        imageURI,
+                        '", '
+                        '"external_link": "',
+                        externalLink,
+                        '", '
+                        '"seller_fee_basis_points" : ',
+                        Strings.toString(platformFeePercentage),
+                        ", "
+                        '"fee_recipient": "',
+                        Strings.toHexString(
+                            uint256(uint160(zangCommissionAccount)),
+                            20
+                        ),
+                        '"'
                         "}"
                     )
                 )
@@ -90,8 +108,15 @@ contract ZangNFT is
         return _names[tokenId];
     }
 
-    function descriptionOf(uint256 tokenId) public view returns (string memory) {
-        require(exists(tokenId), "ZangNFT: description query for nonexistent token");
+    function descriptionOf(uint256 tokenId)
+        public
+        view
+        returns (string memory)
+    {
+        require(
+            exists(tokenId),
+            "ZangNFT: description query for nonexistent token"
+        );
         return _descriptions[tokenId];
     }
 
@@ -102,11 +127,19 @@ contract ZangNFT is
                 string(
                     abi.encodePacked(
                         '{ "name": "',
-                        StringUtils.insertBeforeAsciiString(_names[tokenId], '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(
+                            _names[tokenId],
+                            '"',
+                            "\\"
+                        ),
                         '", ',
                         '"description" : ',
                         '"',
-                        StringUtils.insertBeforeAsciiString(_descriptions[tokenId], '"', '\\'),
+                        StringUtils.insertBeforeAsciiString(
+                            _descriptions[tokenId],
+                            '"',
+                            "\\"
+                        ),
                         '", ',
                         //'"image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '", '
                         '"text_uri" : ',
@@ -175,15 +208,19 @@ contract ZangNFT is
         return _textURIs[tokenId];
     }
 
-    function burn(address _from, uint256 _tokenId, uint256 _amount) external {
+    function burn(
+        address _from,
+        uint256 _tokenId,
+        uint256 _amount
+    ) external {
         require(
             _from == msg.sender || isApprovedForAll(_from, msg.sender),
             "ZangNFT: caller is not owner nor approved"
         );
-        
+
         _burn(_from, _tokenId, _amount);
 
-        if(totalSupply(_tokenId) == 0) {
+        if (totalSupply(_tokenId) == 0) {
             delete _textURIs[_tokenId];
             delete _names[_tokenId];
             delete _descriptions[_tokenId];
@@ -191,12 +228,17 @@ contract ZangNFT is
         }
     }
 
-    function decreaseRoyaltyNumerator(uint256 _tokenId, uint96 _lowerValue) external {
+    function decreaseRoyaltyNumerator(uint256 _tokenId, uint96 _lowerValue)
+        external
+    {
         require(
             exists(_tokenId),
             "ZangNFT: decreasing royalty numerator for nonexistent token"
         ); // Opt.
-        require(msg.sender == authorOf(_tokenId), "ZangNFT: caller is not author");
+        require(
+            msg.sender == authorOf(_tokenId),
+            "ZangNFT: caller is not author"
+        );
 
         _decreaseRoyaltyNumerator(_tokenId, _lowerValue);
     }
