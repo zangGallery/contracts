@@ -7,7 +7,7 @@ import "../node_modules/@openzeppelin/contracts/utils/math/Math.sol";
 /// [MIT License]
 library StringUtils {
     function utfLength(bytes1 b) internal pure returns (uint8) {
-        if (b < 0xC0) {
+        if (b < 0xC0) { // We also count continuation bytes as 1 byte long
             return 1;
         } else if(b < 0xE0) {
             return 2;
@@ -34,8 +34,8 @@ library StringUtils {
 
     function insertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) internal pure returns (bytes memory) {
         // You can't insert something before a prefix byte (you technically could, but it would be really counter-intuitive)
-        require(utfLength(target) == 1, "StringUtils: target must be ASCII");
-        require(utfLength(insert) == 1, "StringUtils: insert must be ASCII");
+        require(target < 0x80, "StringUtils: target must be ASCII");
+        require(insert < 0x80, "StringUtils: insert must be ASCII");
 
         uint256 startingPos;
         if (str.length < 4) {
