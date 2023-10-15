@@ -4,8 +4,6 @@ pragma solidity ^0.8.6;
 import {Base64} from "./MetadataUtils.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC2981.sol";
 import {StringUtils} from "./StringUtils.sol";
