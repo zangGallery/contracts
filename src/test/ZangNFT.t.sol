@@ -943,7 +943,7 @@ contract ZangNFTtest is DSTest {
         if(_lowerValue > 10000) {
             hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
             zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
-        } else if(_lowerValue > currentRoyaltyValue) {
+        } else if(_lowerValue >= currentRoyaltyValue) {
             hevm.expectRevert("ERC2981: _lowerFeeNumerator must be less than the current royaltyFraction");
             zangNFT.decreaseRoyaltyNumerator(id, _lowerValue);
         } else {

@@ -237,11 +237,11 @@ contract StringUtilsTest is DSTest {
     }
 
     function test_insert_before_ascii_fuzz(bytes memory s, bytes1 charToFind, bytes1 charToInsert) public {
-        if (charToFind >= 0xC0) {
+        if (charToFind >= 0x80) {
             // Prefix character, aka first byte of a multi byte character
             hevm.expectRevert("StringUtils: target must be ASCII");
             wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
-        } else if (charToInsert >= 0xC0) {
+        } else if (charToInsert >= 0x80) {
             hevm.expectRevert("StringUtils: insert must be ASCII");
             wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
         }

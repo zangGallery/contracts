@@ -13,12 +13,8 @@ library StringUtils {
             return 2;
         } else if(b < 0xF0) {
             return 3;
-        } else if(b < 0xF8) {
-            return 4;
-        } else if(b < 0xFC) {
-            return 5;
         } else {
-            return 6;
+            return 4;
         }
     }
 
@@ -44,7 +40,7 @@ library StringUtils {
             startingPos = str.length - 4;
         }
 
-        for (uint256 i = uint256(startingPos); i < str.length; i++) {
+        for (uint256 i = startingPos; i < str.length; i++) {
             if (utfLength(str[i]) + i > str.length) {
                 revert("StringUtils: not a valid UTF-8 string");
             }
