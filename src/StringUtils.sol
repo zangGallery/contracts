@@ -7,7 +7,7 @@ import "../node_modules/@openzeppelin/contracts/utils/math/Math.sol";
 /// [MIT License]
 library StringUtils {
     function utfLength(bytes1 b) internal pure returns (uint8) {
-        if (b < 0x80) {
+        if (b < 0xC0) {
             return 1;
         } else if(b < 0xE0) {
             return 2;
@@ -37,7 +37,14 @@ library StringUtils {
         require(utfLength(target) == 1, "StringUtils: target must be ASCII");
         require(utfLength(insert) == 1, "StringUtils: insert must be ASCII");
 
-        for (uint256 i = 0; i < str.length; i++) {
+        uint256 startingPos;
+        if (str.length < 4) {
+            startingPos = 0;
+        } else {
+            startingPos = str.length - 4;
+        }
+
+        for (uint256 i = uint256(startingPos); i < str.length; i++) {
             if (utfLength(str[i]) + i > str.length) {
                 revert("StringUtils: not a valid UTF-8 string");
             }
