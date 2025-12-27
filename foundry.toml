@@ -6,6 +6,7 @@ test = "src/test"
 solc = "0.8.6"
 optimizer = true
 optimizer_runs = 200
+verbosity = 2
 
 remappings = [
     "forge-std/=lib/forge-std/src/",
@@ -13,8 +14,32 @@ remappings = [
     "../node_modules/@openzeppelin/=node_modules/@openzeppelin/",
 ]
 
+gas_reports = ["Marketplace", "ZangNFT", "ZangNFTCommissions"]
+
 [profile.default.fuzz]
+runs = 10000
+max_test_rejects = 65536
+seed = "0x1234"
+dictionary_weight = 40
+
+[profile.default.invariant]
 runs = 256
+depth = 100
+fail_on_revert = false
+call_override = false
+dictionary_weight = 80
+shrink_run_limit = 5000
+
+[profile.ci]
+fuzz.runs = 5000
+invariant.runs = 100
+invariant.depth = 50
+verbosity = 1
+
+[profile.quick]
+fuzz.runs = 500
+invariant.runs = 32
+invariant.depth = 20
 
 [fmt]
 line_length = 120
