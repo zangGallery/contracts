@@ -1,24 +1,8 @@
 {
-  "name": "testing",
+  "name": "zang-contracts",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zangGallery/testing.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/zangGallery/testing/issues"
-  },
-  "homepage": "https://github.com/zangGallery/testing#readme",
+  "description": "Zang NFT smart contracts - on-chain text-based NFTs with marketplace",
+  "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2"
   }

@@ -1,18 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
-import "ds-test/test.sol";
 
-import "../ZangNFT.sol";
-import "../Marketplace.sol";
+import "forge-std/Test.sol";
 import {StringUtils} from "../StringUtils.sol";
-
-interface Hevm {
-    function prank(address) external;
-    function expectRevert(bytes calldata) external;
-    function deal(address, uint256) external;
-    function startPrank(address) external;
-    function stopPrank() external;
-}
 
 contract StringUtilsWrapper {
     function wrappedInsertBeforeAscii(bytes memory str, bytes1 target, bytes1 insert) public pure returns (bytes memory) {
@@ -20,8 +10,7 @@ contract StringUtilsWrapper {
     }
 }
 
-contract StringUtilsTest is DSTest {
-    Hevm constant hevm = Hevm(HEVM_ADDRESS);
+contract StringUtilsTest is Test {
     StringUtilsWrapper wrapper = new StringUtilsWrapper();
     function setUp() public {
     }
@@ -220,11 +209,11 @@ contract StringUtilsTest is DSTest {
         assertBytesEq(t, bytes("aaaab"));
 
         s = bytes(unicode"ì"); // C3 AC
-        hevm.expectRevert("StringUtils: target must be ASCII");
+        vm.expectRevert("StringUtils: target must be ASCII");
         t = wrapper.wrappedInsertBeforeAscii(s, 0xC3, '_');
 
         s = bytes(unicode"ì"); // C3 AC
-        hevm.expectRevert("StringUtils: insert must be ASCII");
+        vm.expectRevert("StringUtils: insert must be ASCII");
         t = wrapper.wrappedInsertBeforeAscii(s, '_', 0xC3);
 
         s = bytes(unicode"ìab");
@@ -239,10 +228,10 @@ contract StringUtilsTest is DSTest {
     function test_insert_before_ascii_fuzz(bytes memory s, bytes1 charToFind, bytes1 charToInsert) public {
         if (charToFind >= 0x80) {
             // Prefix character, aka first byte of a multi byte character
-            hevm.expectRevert("StringUtils: target must be ASCII");
+            vm.expectRevert("StringUtils: target must be ASCII");
             wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
         } else if (charToInsert >= 0x80) {
-            hevm.expectRevert("StringUtils: insert must be ASCII");
+            vm.expectRevert("StringUtils: insert must be ASCII");
             wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
         }
         else {
@@ -274,7 +263,7 @@ contract StringUtilsTest is DSTest {
                     }
                 }
             } else {
-                hevm.expectRevert("StringUtils: not a valid UTF-8 string");
+                vm.expectRevert("StringUtils: not a valid UTF-8 string");
                 wrapper.wrappedInsertBeforeAscii(s, charToFind, charToInsert);
             }
         }
